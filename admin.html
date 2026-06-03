@@ -248,10 +248,14 @@
             <div class="md:col-span-2 space-y-2">
               <label class="block text-[10px] uppercase font-bold text-slate-400">Upload Banner Thumbnail (Direct to Cloudinary)</label>
               <div class="flex items-center gap-3">
-                <input type="file" id="course-thumb-file" accept="image/*" class="text-xs text-slate-400 bg-white/[0.04] file:bg-blue-600 file:border-none file:text-white file:px-4 file:py-2 file:rounded-xl file:text-xs">
+                <input type="file" id="course-thumb-file" accept="image/jpeg,image/png,image/webp" class="text-xs text-slate-400 bg-white/[0.04] file:bg-blue-600 file:border-none file:text-white file:px-4 file:py-2 file:rounded-xl file:text-xs">
                 <input type="text" id="course-thumb-url" readonly placeholder="Calculated Asset URL" class="flex-grow text-xs text-emerald-400 bg-white/[0.02] border border-white/5 p-2 rounded-lg font-mono">
               </div>
               <div id="course-thumb-progress" class="hidden text-[10px] text-blue-400"><i class="fa-solid fa-spinner animate-spin"></i> File uploading onto cloud directory...</div>
+              <div id="course-thumb-preview-container" class="hidden mt-2 p-2 bg-white/5 border border-white/10 rounded-xl max-w-xs flex items-center gap-3">
+                <img id="course-thumb-preview" src="" class="w-16 h-12 object-cover rounded-lg border border-white/10 bg-black/40">
+                <div class="text-[10px] text-slate-450">Image Preview</div>
+              </div>
             </div>
 
             <div class="md:col-span-2">
@@ -380,6 +384,10 @@
               <input type="file" id="pdf-source-file" accept="application/pdf" class="text-xs text-slate-400 mx-auto bg-white/[0.02] file:bg-blue-600 file:border-none file:text-white file:px-4 file:py-1.5 file:rounded-xl file:text-xs">
               <input type="text" id="pdf-uploaded-url" readonly placeholder="Secure Cloudinary Link Output" class="w-full text-xs text-emerald-400 text-center bg-white/[0.02] border border-white/10 p-2 rounded-lg font-mono">
               <div id="pdf-upload-progress" class="hidden text-xs text-blue-400 animate-pulse mt-2"><i class="fa-solid fa-spinner animate-spin"></i> Direct Cloudinary ingestion stream transmitting...</div>
+              <div id="pdf-preview-container" class="hidden mt-2 p-3 bg-white/5 border border-white/10 rounded-xl flex items-center gap-3 justify-center">
+                <i class="fa-solid fa-file-pdf text-red-500 text-lg"></i>
+                <span class="text-xs text-slate-300 font-medium">PDF Selected & Ready</span>
+              </div>
             </div>
 
             <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-xs font-bold uppercase rounded-xl tracking-wider">Catalog PDF Study Material</button>
@@ -547,9 +555,13 @@
               </div>
               <div class="space-y-1">
                 <label class="block text-[10px] uppercase font-bold text-slate-500">Slide Picture File (Direct Cloudinary upload)</label>
-                <input type="file" id="ban-img-file" accept="image/*" class="text-xs text-slate-400 bg-white/[0.02] file:bg-blue-600 file:border-none file:text-white file:px-3 file:py-1.5 file:rounded-xl file:text-xs">
+                <input type="file" id="ban-img-file" accept="image/jpeg,image/png,image/webp" class="text-xs text-slate-400 bg-white/[0.02] file:bg-blue-600 file:border-none file:text-white file:px-3 file:py-1.5 file:rounded-xl file:text-xs">
                 <input type="text" id="ban-img-url" readonly placeholder="Output Cloud Link" class="w-full text-[10px] text-emerald-400 bg-white/[0.02] border border-white/5 p-2 rounded-lg font-mono">
                 <div id="ban-progress" class="hidden text-[9px] text-blue-400"><i class="fa-solid fa-spinner animate-spin"></i> Direct cloud storage streaming...</div>
+                <div id="ban-preview-container" class="hidden mt-2 p-2 bg-white/5 border border-white/10 rounded-xl max-w-xs flex items-center gap-3">
+                  <img id="ban-preview" src="" class="w-20 h-10 object-cover rounded-lg border border-white/10 bg-black/40">
+                  <span class="text-[10px] text-slate-455">Slide Preview</span>
+                </div>
               </div>
               <button type="submit" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-[10px] uppercase font-bold rounded-lg transition tracking-wide">Save Banner Slide</button>
             </form>
@@ -575,8 +587,13 @@
                 </div>
                 <div>
                   <label class="block text-[10px] uppercase font-bold text-slate-500">Cloud Photo Uploader</label>
-                  <input type="file" id="top-img-file" accept="image/*" class="text-[9px] text-slate-400 bg-white/[0.02] p-1.5 border border-white/5">
+                  <input type="file" id="top-img-file" accept="image/jpeg,image/png,image/webp" class="text-[9px] text-slate-400 bg-white/[0.02] p-1.5 border border-white/5 w-full">
+                  <div id="top-img-progress" class="hidden text-[9px] text-blue-400 mt-1"><i class="fa-solid fa-spinner animate-spin"></i> Uploading...</div>
                   <input type="hidden" id="top-img-url">
+                  <div id="top-preview-container" class="hidden mt-2 p-1.5 bg-white/5 border border-white/10 rounded-xl flex items-center gap-2">
+                    <img id="top-preview" src="" class="w-10 h-10 object-cover rounded-full border border-white/10 bg-black/40">
+                    <span class="text-[9px] text-slate-450">Topper Photo</span>
+                  </div>
                 </div>
               </div>
               <button type="submit" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-[10px] uppercase font-bold rounded-lg transition">Save Topper</button>
@@ -992,8 +1009,8 @@
     let dynamicTestsList = {};
     
     // Default Unsigned Cloudinary endpoint parameters
-    let cloudinaryCloudName = "djx5nm39b";
-    let cloudinaryUploadPreset = "ml_default";
+    let cloudinaryCloudName = "djtzg5ou7";
+    let cloudinaryUploadPreset = "Ed_course";
 
     // On-load local storage verification of preference settings
     window.addEventListener('load', () => {
@@ -1006,8 +1023,8 @@
         document.getElementById('pref-cl-preset').value = storedPreset;
         document.getElementById('cloudinary-status-disp').innerText = "Ready (Custom Configuration)";
       } else {
-        document.getElementById('pref-cl-name').value = "djx5nm39b";
-        document.getElementById('pref-cl-preset').value = "ml_default";
+        document.getElementById('pref-cl-name').value = "djtzg5ou7";
+        document.getElementById('pref-cl-preset').value = "Ed_course";
       }
     });
 
@@ -1035,56 +1052,181 @@
     }
 
     // 3. CLOUDINARY FILE PICKER TRANSFERS (Image / PDF)
-    async function executeDirectCloudinaryUpload(fileElement, progressElement, outputURLElement) {
+    function uploadFileToCloudinary(file, progressCallback) {
+      return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', cloudinaryUploadPreset);
+        formData.append('resource_type', 'auto'); // Auto detect image or raw files like PDF
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/upload`, true);
+
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            const pct = Math.round((e.loaded / e.total) * 100);
+            if (progressCallback) progressCallback(pct);
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const resJson = JSON.parse(xhr.responseText);
+              resolve(resJson);
+            } catch (err) {
+              reject(new Error("Response parse error"));
+            }
+          } else {
+            try {
+              const errJson = JSON.parse(xhr.responseText);
+              reject(new Error(errJson.error?.message || "Cloudinary upload rejected"));
+            } catch {
+              reject(new Error(`HTTP Error ${xhr.status}`));
+            }
+          }
+        };
+
+        xhr.onerror = () => reject(new Error("Network connection error to Cloudinary"));
+        xhr.send(formData);
+      });
+    }
+
+    // Dynamic clean Toast notification system
+    function showToast(message, type = 'success') {
+      let container = document.getElementById('toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'fixed top-4 right-4 z-[9999] pointer-events-none flex flex-col gap-2 max-w-sm w-full px-4 sm:px-0';
+        document.body.appendChild(container);
+      }
+
+      const toast = document.createElement('div');
+      toast.className = `p-4 rounded-xl shadow-2xl flex items-start gap-3 border pointer-events-auto transition-all duration-300 transform translate-y-0 opacity-100 ${
+        type === 'success' 
+          ? 'bg-emerald-950/90 border-emerald-500/30 text-emerald-200' 
+          : 'bg-red-950/90 border-red-500/30 text-red-200'
+      }`;
+
+      const icon = type === 'success' 
+        ? '<i class="fa-solid fa-circle-check text-emerald-400 text-lg mt-0.5 animate-bounce"></i>' 
+        : '<i class="fa-solid fa-circle-exclamation text-red-400 text-lg mt-0.5"></i>';
+
+      toast.innerHTML = `
+        ${icon}
+        <div class="flex-grow">
+          <p class="text-xs font-bold font-poppins">${type === 'success' ? 'Success' : 'Upload Failure'}</p>
+          <p class="text-[11px] text-slate-300 mt-1">${message}</p>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white transition text-xs">&times;</button>
+      `;
+
+      container.appendChild(toast);
+
+      // Auto-remove after 4 seconds
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        setTimeout(() => toast.remove(), 400);
+      }, 4000);
+    }
+
+    async function executeDirectCloudinaryUpload(fileElement, progressElement, outputURLElement, previewElement, previewContainer) {
       const file = fileElement.files[0];
       if (!file) return;
 
-      progressElement.classList.remove('hidden');
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+      if (!allowedTypes.includes(file.type)) {
+        showToast("Invalid file type! Supported: JPG, PNG, WEBP, and PDF files.", "error");
+        fileElement.value = "";
+        return;
+      }
 
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', cloudinaryUploadPreset);
+      // Reset preview states and show progress is visible
+      if (previewContainer) previewContainer.classList.add('hidden');
+      progressElement.classList.remove('hidden');
+      progressElement.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Direct Cloudinary Transmission (0%)...`;
+
+      // Show temporary local preview if valid image
+      if (file.type.startsWith('image/') && previewElement) {
+        previewElement.src = URL.createObjectURL(file);
+        if (previewContainer) previewContainer.classList.remove('hidden');
+      }
 
       try {
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/upload`, {
-          method: "POST",
-          body: formData
+        const details = await uploadFileToCloudinary(file, (percent) => {
+          progressElement.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Ingesting: ${percent}% progress...`;
         });
-        const details = await res.json();
+
         progressElement.classList.add('hidden');
-        
+
         if (details.secure_url) {
-          outputURLElement.value = details.secure_url;
-          alert("✓ Upload successfully stored in Cloudinary!");
-          return details.secure_url;
+          const secureUrl = details.secure_url;
+          outputURLElement.value = secureUrl;
+
+          // Dispatch change event
+          outputURLElement.dispatchEvent(new Event('change', { bubbles: true }));
+
+          // Render finished previews
+          if (previewContainer) {
+            previewContainer.classList.remove('hidden');
+            if (file.type.startsWith('image/') && previewElement) {
+              previewElement.src = secureUrl;
+            }
+          }
+
+          showToast("File uploaded to Cloudinary happily!", "success");
+          return secureUrl;
         } else {
-          progressElement.classList.add('hidden');
-          alert("Cloudinary upload issue. Check if unsigned preset configuration is accurate.");
+          showToast("Upload failed: No secure_url returned from Cloudinary.", "error");
         }
       } catch (err) {
         progressElement.classList.add('hidden');
-        console.error("Cloudinary connection failed:", err);
-        alert("Network failure accessing Cloudinary endpoints.");
+        console.error("Cloudinary upload error:", err);
+        showToast(`Cloudinary file upload failed: ${err.message}`, "error");
       }
     }
 
     // Bind Cloudinary upload flow to file picker boxes
     document.getElementById('course-thumb-file').addEventListener('change', function() {
-      executeDirectCloudinaryUpload(this, document.getElementById('course-thumb-progress'), document.getElementById('course-thumb-url'));
+      executeDirectCloudinaryUpload(
+        this, 
+        document.getElementById('course-thumb-progress'), 
+        document.getElementById('course-thumb-url'),
+        document.getElementById('course-thumb-preview'),
+        document.getElementById('course-thumb-preview-container')
+      );
     });
 
     document.getElementById('pdf-source-file').addEventListener('change', function() {
-      executeDirectCloudinaryUpload(this, document.getElementById('pdf-upload-progress'), document.getElementById('pdf-uploaded-url'));
+      executeDirectCloudinaryUpload(
+        this, 
+        document.getElementById('pdf-upload-progress'), 
+        document.getElementById('pdf-uploaded-url'),
+        null,
+        document.getElementById('pdf-preview-container')
+      );
     });
 
     document.getElementById('ban-img-file').addEventListener('change', function() {
-      executeDirectCloudinaryUpload(this, document.getElementById('ban-progress'), document.getElementById('ban-img-url'));
+      executeDirectCloudinaryUpload(
+        this, 
+        document.getElementById('ban-progress'), 
+        document.getElementById('ban-img-url'),
+        document.getElementById('ban-preview'),
+        document.getElementById('ban-preview-container')
+      );
     });
 
     document.getElementById('top-img-file').addEventListener('change', function() {
-      const inp = document.getElementById('top-img-url');
-      const dummyProgress = { classList: { remove() {}, add() {} } }; // quick fallback mockup
-      executeDirectCloudinaryUpload(this, dummyProgress, inp);
+      executeDirectCloudinaryUpload(
+        this, 
+        document.getElementById('top-img-progress'), 
+        document.getElementById('top-img-url'),
+        document.getElementById('top-preview'),
+        document.getElementById('top-preview-container')
+      );
     });
 
     // 4. TABBED SECTION ROUTER
@@ -1196,9 +1338,11 @@
         price: 199,
         thumbnail: thumb || ""
       }).then(() => {
-        alert("✓ Syllabus preparation course unblocked and saved.");
+        showToast("Syllabus preparation course unblocked and saved successfully.", "success");
         document.getElementById('course-create-form').reset();
         document.getElementById('course-thumb-url').value = "";
+        const previewCont = document.getElementById('course-thumb-preview-container');
+        if (previewCont) previewCont.classList.add('hidden');
       });
     });
 
@@ -1464,7 +1608,7 @@
       const subTag = document.getElementById('pdf-subject-val').value;
       const generatedLink = document.getElementById('pdf-uploaded-url').value;
 
-      if (!generatedLink) return alert("Select and upload pdf onto Cloudinary server first.");
+      if (!generatedLink) return showToast("Select and upload pdf onto Cloudinary server first.", "error");
 
       const pdfId = "PDF-" + Date.now();
       database.ref('pdfs/' + pdfId).set({
@@ -1473,19 +1617,22 @@
         url: generatedLink,
         uploadedAt: new Date().toISOString()
       }).then(() => {
-        alert("✓ Study PDF note logged into libraries database safely.");
+        showToast("Study PDF note logged into libraries database safely.", "success");
         document.getElementById('pdf-upload-form').reset();
         document.getElementById('pdf-uploaded-url').value = "";
-        renderCataloguedPdfsDetails();
+        const previewCont = document.getElementById('pdf-preview-container');
+        if (previewCont) previewCont.classList.add('hidden');
       });
     });
 
     function renderCataloguedPdfsDetails() {
       const parent = document.getElementById('admin-pdfs-stream');
-      parent.innerHTML = "";
+      if (!parent) return;
 
-      database.ref('pdfs').once('value', snapshot => {
+      database.ref('pdfs').off('value');
+      database.ref('pdfs').on('value', snapshot => {
         const list = snapshot.val() || {};
+        parent.innerHTML = "";
         let count = 0;
         for (let key in list) {
           count++;
@@ -1789,7 +1936,7 @@
       const title = document.getElementById('ban-title-field').value;
       const url = document.getElementById('ban-img-url').value;
 
-      if (!url) return alert("Upload promotional files onto Cloudinary folder first.");
+      if (!url) return showToast("Upload promotional files onto Cloudinary folder first.", "error");
 
       const bannerId = "BAN-" + Date.now();
       database.ref(`banners/${bannerId}`).set({
@@ -1797,9 +1944,11 @@
         url: url,
         active: true
       }).then(() => {
-        alert("✓ Promos Carousel item initialized.");
+        showToast("Promos Carousel item initialized.", "success");
         document.getElementById('banner-build-form').reset();
         document.getElementById('ban-img-url').value = "";
+        const previewCont = document.getElementById('ban-preview-container');
+        if (previewCont) previewCont.classList.add('hidden');
       });
     });
 
@@ -1817,9 +1966,11 @@
         rank: rank || "Score: 140/150",
         photoUrl: photo || ""
       }).then(() => {
-        alert("✓ Elite toppers ledger updated successfully.");
+        showToast("Elite toppers ledger updated successfully.", "success");
         document.getElementById('topper-build-form').reset();
         document.getElementById('top-img-url').value = "";
+        const previewCont = document.getElementById('top-preview-container');
+        if (previewCont) previewCont.classList.add('hidden');
       });
     });
 
