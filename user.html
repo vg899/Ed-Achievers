@@ -99,6 +99,13 @@
     .neon-glow-blue {
       box-shadow: 0 0 15px rgba(37, 99, 235, 0.35);
     }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
   </style>
 </head>
 <body class="min-h-screen pb-20 font-sans antialiased selection:bg-blue-600 selection:text-white">
@@ -624,6 +631,293 @@
       </div>
 
     </section>
+
+    <!-- FOOTER -->
+    <footer id="app-shared-footer" class="w-full text-center py-6 mt-10 border-t border-white/5 space-y-4 pb-20">
+      <div class="flex flex-col items-center">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center mb-2">
+          <i class="fa-solid fa-graduation-cap text-white text-sm"></i>
+        </div>
+        <h3 class="font-poppins font-bold text-sm text-white">Ed Achievers</h3>
+        <p class="text-[10px] text-blue-400 font-medium uppercase tracking-widest">Learn • Practice • Achieve</p>
+      </div>
+      
+      <!-- Footer Links Grid -->
+      <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 px-4 text-xs font-medium text-slate-400">
+        <button onclick="openInfoPage('about')" class="hover:text-blue-400 transition cursor-pointer">About Us</button>
+        <span class="text-slate-600 font-normal select-none">•</span>
+        <button onclick="openInfoPage('contact')" class="hover:text-blue-400 transition cursor-pointer">Contact Us</button>
+        <span class="text-slate-600 font-normal select-none">•</span>
+        <button onclick="openInfoPage('privacy')" class="hover:text-blue-400 transition cursor-pointer">Privacy Policy</button>
+        <span class="text-slate-600 font-normal select-none">•</span>
+        <button onclick="openInfoPage('terms')" class="hover:text-blue-400 transition cursor-pointer">Terms & Conditions</button>
+        <span class="text-slate-600 font-normal select-none">•</span>
+        <button onclick="openInfoPage('refund')" class="hover:text-blue-400 transition cursor-pointer">Refund Policy</button>
+      </div>
+      
+      <div class="text-[10px] text-slate-500 font-mono">
+        © 2026 Ed Achievers. All rights reserved.
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- INFORMATION LAYER OVERLAY (MODAL VIEW) -->
+  <div id="info-overlay-modal" class="fixed inset-0 z-50 hidden bg-[#0b1329] overflow-y-auto">
+    <!-- Top Nav app bar for native Android feel -->
+    <div class="sticky top-0 z-10 w-full px-4 py-4 bg-[#0b1329]/95 backdrop-blur-md border-b border-white/5 flex items-center justify-between">
+      <button onclick="closeInfoPage()" class="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center text-slate-300 active:scale-95 transition">
+        <i class="fa-solid fa-arrow-left text-lg"></i>
+      </button>
+      <h2 id="info-modal-title" class="font-poppins font-bold text-md text-white">About Us</h2>
+      <div class="w-10 h-10"></div> <!-- spacer for centering -->
+    </div>
+
+    <!-- Scrollable content area -->
+    <div class="max-w-md mx-auto px-4 py-6 pb-24 space-y-6">
+      <!-- ABOUT US TAB -->
+      <div id="info-content-about" class="hidden space-y-6 animate-fade-in">
+        <div class="glass-card rounded-2xl p-6 text-center space-y-4">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center mx-auto neon-glow-blue">
+            <i class="fa-solid fa-graduation-cap text-white text-3xl"></i>
+          </div>
+          <div>
+            <h1 class="font-poppins font-bold text-2xl text-white">Ed Achievers</h1>
+            <p class="text-blue-400 text-xs font-semibold uppercase tracking-widest mt-1">Learn • Practice • Achieve</p>
+          </div>
+          <div class="border-t border-white/5 pt-4 text-left space-y-3">
+            <div class="flex items-center gap-2.5 text-xs text-slate-300">
+              <i class="fa-solid fa-user-tie text-blue-500 text-sm w-4 text-center"></i>
+              <span>Founder: <strong class="text-white">Roli Pandey</strong></span>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Ed Achievers is an online learning platform dedicated to helping students prepare for CTET, UPTET, STET, DSSSB, KVS, and other teaching examinations. The platform provides recorded lectures, live classes, quizzes, study materials, PDF notes, mock tests, and exam updates.
+            </p>
+          </div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6 space-y-3">
+          <h3 class="font-poppins font-bold text-sm text-blue-400 uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-bullseye text-blue-500"></i> Our Mission
+          </h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            To provide affordable and quality education for teaching aspirants across India. We strive to craft accessible pathways that empower potential educators to complete state level eligibility parameters on their first attempt, nurturing qualified teachers for the next generation.
+          </p>
+        </div>
+      </div>
+
+      <!-- CONTACT US TAB -->
+      <div id="info-content-contact" class="hidden space-y-6 animate-fade-in">
+        <div class="glass-card rounded-2xl p-6 space-y-6">
+          <div class="text-center space-y-2">
+            <div class="w-12 h-12 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mx-auto text-blue-400 text-xl">
+              <i class="fa-solid fa-headset"></i>
+            </div>
+            <h3 class="font-poppins font-bold text-lg text-white">Support Desk</h3>
+            <p class="text-xs text-slate-400">Questions? We are here to guide you 24x7</p>
+          </div>
+
+          <div class="space-y-4">
+            <!-- Email Item -->
+            <div class="flex items-center justify-between p-3.5 bg-white/[0.02] border border-white/5 rounded-xl hover:border-blue-500/20 transition">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
+                  <i class="fa-solid fa-envelope"></i>
+                </div>
+                <div>
+                  <span class="block text-[10px] text-slate-400 uppercase tracking-widest font-bold">Support Email</span>
+                  <span class="text-xs text-slate-200 select-all font-mono">support@edachievers.in</span>
+                </div>
+              </div>
+              <a href="mailto:support@edachievers.in?subject=Course%20Query%20-%20Ed%20Achievers" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-bold active:scale-95 transition">Email Us</a>
+            </div>
+
+            <!-- WhatsApp Item -->
+            <div class="flex items-center justify-between p-3.5 bg-white/[0.02] border border-white/5 rounded-xl hover:border-green-500/20 transition">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-green-500/10 flex items-center justify-center text-green-400">
+                  <i class="fa-brands fa-whatsapp text-lg"></i>
+                </div>
+                <div>
+                  <span class="block text-[10px] text-slate-400 uppercase tracking-widest font-bold">WhatsApp Support</span>
+                  <span class="text-xs text-slate-200 select-all font-mono">+91 9415022707</span>
+                </div>
+              </div>
+              <a href="https://wa.me/919415022707?text=Hello%20Ed%20Achievers%2C%20I%20have%20a%20query%20regarding%20preparatory%20courses." target="_blank" class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-[10px] font-bold active:scale-95 transition">WhatsApp Chat</a>
+            </div>
+
+            <!-- Response Time -->
+            <div class="p-3 bg-blue-500/5 rounded-xl text-center border border-blue-500/10">
+              <span class="text-[10px] text-slate-400">Average response wait time parameters:</span>
+              <p class="text-xs text-blue-400 font-semibold mt-0.5"><i class="fa-solid fa-clock-rotate-left mr-1"></i> Within 24 to 48 Hours</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRIVACY POLICY TAB -->
+      <div id="info-content-privacy" class="hidden space-y-6 animate-fade-in">
+        <div class="glass-card rounded-2xl p-6 space-y-5">
+          <div class="flex items-center gap-2.5 pb-3 border-b border-white/5">
+            <i class="fa-solid fa-shield-halved text-blue-500 text-lg"></i>
+            <h3 class="font-poppins font-bold text-sm text-white">Privacy Policy</h3>
+          </div>
+          
+          <div class="space-y-4 text-xs text-slate-300 leading-relaxed text-justify">
+            <p class="text-slate-400 italic">Effective Date: June 3, 2026. User data is protected and used only for educational services provided by Ed Achievers.</p>
+            
+            <div class="space-y-1">
+              <h4 class="font-bold text-white uppercase text-[10px] tracking-wider">1. Information Collection</h4>
+              <p>We collect essential data to authenticate students, register them into preparatory courses, process payments safely, and track educational progress (like quizzes and notes access).</p>
+            </div>
+
+            <div class="space-y-1">
+              <h4 class="font-bold text-white uppercase text-[10px] tracking-wider">2. User Account Information</h4>
+              <p>When you register using Firebase Auth, we save credentials like your name, email address, password hash, and referee patterns to establish stable access states. This data is private and never traded.</p>
+            </div>
+
+            <div class="space-y-1">
+              <h4 class="font-bold text-white uppercase text-[10px] tracking-wider">3. Payment Information</h4>
+              <p>Payment information is processed using secured third-party services like PayU Checkout. We never cache or store raw UPI, CVV, or net-banking attributes locally, relying fully on official redirect API structures.</p>
+            </div>
+
+            <div class="space-y-1">
+              <h4 class="font-bold text-white uppercase text-[10px] tracking-wider">4. Data Storage</h4>
+              <p>Student registration records, purchased packages lists, test marks, and doubt posts are synchronized securely on Firebase Firestore/Realtime Database systems or cached in LocalStorage configuration directories.</p>
+            </div>
+
+            <div class="space-y-1">
+              <h4 class="font-bold text-white uppercase text-[10px] tracking-wider">5. Security Measures</h4>
+              <p>We implement active database access rules, cryptographic signature signing for checkouts, and SSL connection layers to safeguard student profiles from unauthorized intrusion vectors.</p>
+            </div>
+
+            <div class="space-y-1">
+              <h4 class="font-bold text-white uppercase text-[10px] tracking-wider">6. Cookies Usage</h4>
+              <p>We use essential functional browser cookies and localStorage parameters to keep your profile active during sessions, saving you from repeating sign-ins continuously.</p>
+            </div>
+
+            <div class="space-y-1">
+              <h4 class="font-bold text-white uppercase text-[10px] tracking-wider">7. Third Party Services</h4>
+              <p>To improve your learning experience, we use trusted external tools like YouTube SDK, Firebase services, and PayU APIs. These third-party services adhere to independent security constraints.</p>
+            </div>
+
+            <div class="space-y-1">
+              <h4 class="font-bold text-white uppercase text-[10px] tracking-wider">8. User Rights</h4>
+              <p>Every student retains the right to download their progress logs, modify account display names, register for doubts resolution, and revoke sessions. For administrative data updates, reach out to our helpdesk.</p>
+            </div>
+
+            <div class="space-y-1">
+              <h4 class="font-bold text-white uppercase text-[10px] tracking-wider">9. Contact Information</h4>
+              <p>For inquiries regarding privacy, cookie settings, or to request personal profile removal, email support@edachievers.in.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TERMS & CONDITIONS TAB -->
+      <div id="info-content-terms" class="hidden space-y-6 animate-fade-in">
+        <div class="glass-card rounded-2xl p-6 space-y-5">
+          <div class="flex items-center gap-2.5 pb-3 border-b border-white/5">
+            <i class="fa-solid fa-file-contract text-blue-500 text-lg"></i>
+            <h3 class="font-poppins font-bold text-sm text-white">Terms & Conditions</h3>
+          </div>
+          
+          <div class="space-y-4 text-xs text-slate-300 leading-relaxed text-justify">
+            <p class="text-slate-400 italic">Purchased courses are for personal educational use only and cannot be redistributed.</p>
+            
+            <div class="space-y-1">
+              <h4 class="font-bold text-white uppercase text-[10px] tracking-wider">1. User Eligibility</h4>
+              <p>Our platform services are tailored for teaching examination aspirants. By registering, you confirm your eligibility and agree to comply with Indian state educational regulations.</p>
+            </div>
+
+            <div class="space-y-1">
+              <h4 class="font-bold text-white uppercase text-[10px] tracking-wider">2. Account Responsibilities</h4>
+              <p>You must keep your account password secure. Any actions initiated through your credentials remain your legal responsibility. Inform support immediately of security leaks.</p>
+            </div>
+
+            <div class="space-y-1">
+              <h4 class="font-bold text-white uppercase text-[10px] tracking-wider">3. Course Access Rules</h4>
+              <p>Successful registration unlocks targeted recorded videos, live sessions, quizzes, and PDF documentation, bound by course validity constraints outlined during billing checkout.</p>
+            </div>
+
+            <div class="space-y-1">
+              <h4 class="font-bold text-white uppercase text-[10px] tracking-wider">4. Content Usage Restrictions</h4>
+              <p>Videos, mock papers, and teachers' lecture guidelines are protected assets. Screen recording, scraping, account-sharing, or commercial distribution of resources remains strictly prohibited.</p>
+            </div>
+
+            <div class="space-y-1">
+              <h4 class="font-bold text-white uppercase text-[10px] tracking-wider">5. Intellectual Property</h4>
+              <p>The trademarks, logos, system components, and database structure of Ed Achievers are proprietary, managed directly under administration jurisdiction.</p>
+            </div>
+
+            <div class="space-y-1">
+              <h4 class="font-bold text-white uppercase text-[10px] tracking-wider">6. Prohibited Activities</h4>
+              <p>You must not post offensive content in the doubts resolution forum, spam other students, exploit system bugs, or attempt server injection attacks.</p>
+            </div>
+
+            <div class="space-y-1">
+              <h4 class="font-bold text-white uppercase text-[10px] tracking-wider">7. Payment Terms</h4>
+              <p>Prices listed on our checkout pages represent final platform billing fees exclusive of local bank gateway taxes when applicable.</p>
+            </div>
+
+            <div class="space-y-1">
+              <h4 class="font-bold text-white uppercase text-[10px] tracking-wider">8. Suspension & Termination</h4>
+              <p>Ed Achievers reserves the absolute right to suspend user profiles if we identify terms violations, abusive actions, or fraudulent activities.</p>
+            </div>
+
+            <div class="space-y-1">
+              <h4 class="font-bold text-white uppercase text-[10px] tracking-wider">9. Liability Limitation</h4>
+              <p>While we strive to provide excellent prep material, we do not fully guarantee state-level examination outcomes. Access to external content streams depends on web connectivity attributes.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REFUND POLICY TAB -->
+      <div id="info-content-refund" class="hidden space-y-6 animate-fade-in">
+        <div class="glass-card rounded-2xl p-6 space-y-5">
+          <div class="flex items-center gap-2.5 pb-3 border-b border-white/5">
+            <i class="fa-solid fa-money-bill-transfer text-blue-500 text-lg"></i>
+            <h3 class="font-poppins font-bold text-sm text-white">Refund Policy</h3>
+          </div>
+          
+          <div class="space-y-4 text-xs text-slate-300 leading-relaxed text-justify">
+            <div class="p-3 bg-red-500/5 text-red-400 rounded-xl border border-red-500/10 text-center font-semibold">
+              Course purchases are generally non-refundable.
+            </div>
+
+            <p>At Ed Achievers, we provide immediate, complete access to highly comprehensive study catalogs, videos, test structures, and documents upon enrollment checkout. Therefore, purchases cannot be canceled or refunded by standard choice parameters.</p>
+
+            <div class="space-y-2">
+              <h4 class="font-bold text-white uppercase text-[10px] tracking-wider">Refund Consideration Conditions:</h4>
+              <p>Refunds may be considered only in the following explicit situations:</p>
+              <ul class="list-disc list-inside space-y-1.5 pl-2 text-slate-400">
+                <li><strong class="text-white">Duplicate Payment:</strong> Multiple charges recorded for a single enrollment event.</li>
+                <li><strong class="text-white">Technical Payment Failure:</strong> Verification error in database sync leaving course locked.</li>
+                <li><strong class="text-white">Deducted with No Access:</strong> Capital transacted but course access not granted after verification attempts.</li>
+              </ul>
+            </div>
+
+            <div class="space-y-1">
+              <h4 class="font-bold text-white uppercase text-[10px] tracking-wider">Terms of Request:</h4>
+              <p>Refund requests must be submitted within <strong class="text-white">7 days</strong> of purchase event.</p>
+            </div>
+
+            <div class="space-y-1">
+              <h4 class="font-bold text-white uppercase text-[10px] tracking-wider">Approval Parameters:</h4>
+              <p>All refund requests are subject to strict administrative review and approvals by Ed Achievers.</p>
+            </div>
+
+            <div class="space-y-2 pt-2">
+              <span class="block text-[10px] text-slate-400 uppercase tracking-widest">How to request a refund:</span>
+              <p>Email your transaction receipt, registered ID, and screenshots of access barriers to Support Desk at <strong class="text-white select-all">support@edachievers.in</strong> within the 7-day query window.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
 
   </main>
 
@@ -1193,6 +1487,55 @@
         activeBtn.classList.add('text-blue-500', 'font-bold');
         activeBtn.classList.remove('text-slate-400');
       }
+
+      // Toggle common shared footer visibility based on tab layout requirements
+      const footerElem = document.getElementById('app-shared-footer');
+      if (footerElem) {
+        if (['auth', 'quiz-attempt', 'videoplayer', 'splash'].includes(tabId)) {
+          footerElem.classList.add('hidden');
+        } else {
+          footerElem.classList.remove('hidden');
+        }
+      }
+    }
+
+    // 4b. INFORMATION MODAL INTERACTIVE SYSTEM
+    function openInfoPage(type) {
+      // Show the general info overlay
+      const overlay = document.getElementById('info-overlay-modal');
+      if (overlay) overlay.classList.remove('hidden');
+
+      // Hide all contents inside overlay first
+      const pages = ['about', 'contact', 'privacy', 'terms', 'refund'];
+      pages.forEach(p => {
+        const block = document.getElementById('info-content-' + p);
+        if (block) block.classList.add('hidden');
+      });
+
+      // Show requested content
+      const activeBlock = document.getElementById('info-content-' + type);
+      if (activeBlock) activeBlock.classList.remove('hidden');
+
+      // Update the modal appbar title dynamically with localized title
+      const titleElem = document.getElementById('info-modal-title');
+      if (titleElem) {
+        const titles = {
+          'about': 'About Us',
+          'contact': 'Contact Us',
+          'privacy': 'Privacy Policy',
+          'terms': 'Terms & Conditions',
+          'refund': 'Refund Policy'
+        };
+        titleElem.textContent = titles[type] || 'Ed Achievers';
+      }
+
+      // Scroll modal overlay back to top for user comfort
+      if (overlay) overlay.scrollTop = 0;
+    }
+
+    function closeInfoPage() {
+      const overlay = document.getElementById('info-overlay-modal');
+      if (overlay) overlay.classList.add('hidden');
     }
 
     function toggleAuth(showLogin) {
