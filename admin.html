@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ed Achievers - Administrative Control Panel</title>
+  <!-- Font Awesome & Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Firebase Compat CDNs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" crossorigin="anonymous"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            poppins: ['Poppins', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f5ff',
+              100: '#e0ebff',
+              200: '#c2d7ff',
+              500: '#2563eb',
+              600: '#1d4ed8',
+              700: '#1e40af',
+              900: '#1e3a8a',
+              dark: '#0f172a',
+              accentRed: '#ef4444',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0b1329;
+      color: #f1f5f9;
+    }
+    .fancy-scrollbar::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .fancy-scrollbar::-webkit-scrollbar-thumb {
+      background: #2563eb;
+      border-radius: 4px;
+    }
+    .admin-card {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-12 antialiased selection:bg-blue-600 selection:text-white">
+
+  <!-- ADMIN SESSION VALIDATOR (Secure Pin/Pass Auth Guard) -->
+  <div id="admin-auth-guard" class="fixed inset-0 z-50 bg-brand-dark flex items-center justify-center p-4">
+    <div class="admin-card rounded-3xl p-7 max-w-sm w-full space-y-5 text-center shadow-2xl border border-white/5">
+      <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center mx-auto text-white text-2xl shadow-lg shadow-blue-500/10">
+        <i class="fa-solid fa-user-shield"></i>
+      </div>
+      <div>
+        <h2 class="font-poppins font-bold text-lg text-white">Secure Admin Gate</h2>
+        <p class="text-xs text-slate-400 mt-1">Authorized access to Ed Achievers databases only.</p>
+      </div>
+      
+      <form id="admin-gate-form" class="space-y-4">
+        <div>
+          <label class="block text-[10px] uppercase font-black tracking-widest text-slate-500 text-left mb-1.5">Select Officer Role</label>
+          <select id="auth-admin-role" class="w-full text-xs text-white bg-white/[0.04] border border-white/10 p-3 rounded-xl focus:outline-none focus:border-blue-500">
+            <option value="roli_pandey" class="bg-brand-dark">Roli Pandey (Teacher Admin)</option>
+            <option value="super_admin" class="bg-brand-dark">Platform Super Admin</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase font-black tracking-widest text-slate-500 text-left mb-1.5 font-mono">Administrative Pass Key</label>
+          <input type="password" id="auth-admin-pin" placeholder="Enter security credentials" required class="w-full text-center tracking-widest text-sm text-white bg-white/[0.04] border border-white/10 p-3 rounded-xl focus:outline-none focus:border-blue-500 font-mono">
+        </div>
+        <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 transition rounded-xl text-xs font-extrabold uppercase tracking-wider">Access Admin Panel</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- STYLED HEADER -->
+  <header class="sticky top-0 z-40 bg-brand-dark/95 border-b border-white/5 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white text-xl">
+        <i class="fa-solid fa-sliders"></i>
+      </div>
+      <div>
+        <h1 class="font-poppins font-bold text-base text-white">Ed Achievers CRM</h1>
+        <span class="text-[9px] uppercase tracking-widest text-blue-500 font-extrabold"><span id="active-role-disp">Teacher Admin</span> Console</span>
+        <span id="sync-indicator" class="text-[8px] text-slate-500 font-mono block mt-0.5"><i class="fa-solid fa-circle text-[7px] text-slate-500 mr-1 animate-pulse"></i> Initializing Sync...</span>
+      </div>
+    </div>
+    
+    <!-- Cloudinary configurations override drawer -->
+    <div class="flex items-center gap-3">
+      <button onclick="toggleCloudinarySettings()" class="bg-white/5 hover:bg-white/10 text-xs px-3.5 py-2 rounded-xl transition border border-white/5 font-semibold text-slate-300"><i class="fa-solid fa-cloud text-blue-400 mr-2"></i> Cloudinary API Config</button>
+      <button onclick="exitAdminCRM()" class="bg-red-500/10 hover:bg-red-500/20 text-xs px-3.5 py-2 rounded-xl border border-red-500/15 text-red-400 font-bold transition"><i class="fa-solid fa-arrow-right-from-bracket"></i> Exit CRM</button>
+    </div>
+  </header>
+
+  <!-- CLOUDINARY CONFIGS MODAL (Unsigned presets builder) -->
+  <div id="cloudinary-settings-panel" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+    <div class="admin-card rounded-2xl p-6 max-w-sm w-full space-y-4 border border-white/10">
+      <h3 class="font-poppins font-bold text-sm text-white flex items-center gap-2"><i class="fa-solid fa-gears text-blue-500"></i> Cloudinary Direct API Parameters</h3>
+      <p class="text-[11px] text-slate-400">Media/PDF files are uploaded directly from client-side admin onto your Cloudinary assets. Set parameters below.</p>
+      
+      <div class="space-y-3 pt-2">
+        <div>
+          <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Cloudinary Name</label>
+          <input type="text" id="pref-cl-name" class="w-full text-xs text-white bg-white/[0.04] border border-white/10 p-2.5 rounded-lg focus:outline-none text-emerald-400 font-semibold" placeholder="e.g. djx5nm39b">
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Unsigned Preset ID</label>
+          <input type="text" id="pref-cl-preset" class="w-full text-xs text-white bg-white/[0.04] border border-white/10 p-2.5 rounded-lg focus:outline-none text-emerald-400 font-semibold" placeholder="e.g. ml_default">
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="toggleCloudinarySettings()" class="bg-white/5 px-4 py-2 rounded-lg text-xs hover:bg-white/10">Close</button>
+        <button onclick="saveCloudinarySettings()" class="bg-blue-600 px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-700">Save Parameters</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="max-w-6xl mx-auto px-6 py-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+    <!-- SIDEBAR PANELS NAVIGATORS -->
+    <div class="admin-card rounded-2xl p-4 space-y-2 h-fit border border-white/5">
+      <button onclick="switchAdminSection('stats')" class="admin-nav-item w-full text-left font-poppins font-bold text-xs p-3 rounded-xl bg-blue-600 text-white flex items-center gap-2 transition"><i class="fa-solid fa-chart-line"></i> CRM Metrics & Stats</button>
+      <button onclick="switchAdminSection('courses')" class="admin-nav-item w-full text-left font-poppins font-bold text-xs p-3 rounded-xl text-slate-300 hover:bg-white/[0.03] hover:text-white flex items-center gap-2 transition"><i class="fa-solid fa-graduation-cap"></i> Courses Management</button>
+      <button onclick="switchAdminSection('lectures')" class="admin-nav-item w-full text-left font-poppins font-bold text-xs p-3 rounded-xl text-slate-300 hover:bg-white/[0.03] hover:text-white flex items-center gap-2 transition"><i class="fa-solid fa-book-bookmark"></i> Syllabus & Lectures</button>
+      <button onclick="switchAdminSection('lives')" class="admin-nav-item w-full text-left font-poppins font-bold text-xs p-3 rounded-xl text-slate-300 hover:bg-white/[0.03] hover:text-white flex items-center gap-2 transition"><i class="fa-solid fa-circle-play"></i> Live Class Schedulers</button>
+      <button onclick="switchAdminSection('pdfs')" class="admin-nav-item w-full text-left font-poppins font-bold text-xs p-3 rounded-xl text-slate-300 hover:bg-white/[0.03] hover:text-white flex items-center gap-2 transition"><i class="fa-solid fa-file-pdf"></i> Notes & PDF Library</button>
+      <button onclick="switchAdminSection('quizzes')" class="admin-nav-item w-full text-left font-poppins font-bold text-xs p-3 rounded-xl text-slate-300 hover:bg-white/[0.03] hover:text-white flex items-center gap-2 transition"><i class="fa-solid fa-circle-question"></i> Quizzes & Questionnaires</button>
+      <button onclick="switchAdminSection('doubts')" class="admin-nav-item w-full text-left font-poppins font-bold text-xs p-3 rounded-xl text-slate-300 hover:bg-white/[0.03] hover:text-white flex items-center gap-2 transition"><i class="fa-solid fa-reply-all"></i> Doubt Solver Console</button>
+      <button onclick="switchAdminSection('students')" class="admin-nav-item w-full text-left font-poppins font-bold text-xs p-3 rounded-xl text-slate-300 hover:bg-white/[0.03] hover:text-white flex items-center gap-2 transition"><i class="fa-solid fa-users"></i> Student Registries</button>
+      <button onclick="switchAdminSection('ledger')" class="admin-nav-item w-full text-left font-poppins font-bold text-xs p-3 rounded-xl text-slate-300 hover:bg-white/[0.03] hover:text-white flex items-center gap-2 transition"><i class="fa-solid fa-wallet"></i> Gross Ledger & Invoices</button>
+      <button onclick="switchAdminSection('banners')" class="admin-nav-item w-full text-left font-poppins font-bold text-xs p-3 rounded-xl text-slate-300 hover:bg-white/[0.03] hover:text-white flex items-center gap-2 transition"><i class="fa-solid fa-images"></i> Promos & Banners</button>
+    </div>
+
+    <!-- MAIN CRM ADMIN SECTIONS -->
+    <div class="lg:col-span-3 space-y-6">
+
+      <!-- SECTION 1: METRICS & SUMMARY STATIC WIDGETS -->
+      <section id="crm-stats" class="admin-tab-container space-y-6">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div class="admin-card p-5 rounded-2xl space-y-1">
+            <span class="text-[10px] uppercase font-bold text-slate-400">Total Users</span>
+            <span id="stat-total-users" class="block font-poppins font-black text-2xl text-blue-500">0</span>
+          </div>
+          <div class="admin-card p-5 rounded-2xl space-y-1">
+            <span class="text-[10px] uppercase font-bold text-slate-400">Successful Purchases</span>
+            <span id="stat-sales-count" class="block font-poppins font-black text-2xl text-green-400">0</span>
+          </div>
+          <div class="admin-card p-5 rounded-2xl space-y-1">
+            <span class="text-[10px] uppercase font-bold text-slate-400">Total Gross Income</span>
+            <span id="stat-revenue" class="block font-poppins font-black text-2xl text-white">₹0.00</span>
+          </div>
+          <div class="admin-card p-5 rounded-2xl space-y-1">
+            <span class="text-[10px] uppercase font-bold text-slate-400">Active Syllabus Batches</span>
+            <span id="stat-total-courses" class="block font-poppins font-black text-2xl text-indigo-400">0</span>
+          </div>
+          <div class="admin-card p-5 rounded-2xl space-y-1">
+            <span class="text-[10px] uppercase font-bold text-slate-400">Chapters Quizzes</span>
+            <span id="stat-total-tests" class="block font-poppins font-black text-2xl text-yellow-500">0</span>
+          </div>
+          <div class="admin-card p-5 rounded-2xl space-y-1">
+            <span class="text-[10px] uppercase font-bold text-slate-400">Logged Unresolved Doubts</span>
+            <span id="stat-open-doubts" class="block font-poppins font-black text-2xl text-red-400">0</span>
+          </div>
+        </div>
+
+        <div class="admin-card rounded-2xl p-6 space-y-4">
+          <h3 class="font-poppins font-bold text-sm text-white">Platform System Diagnostic</h3>
+          <ul class="text-xs space-y-2 text-slate-300">
+            <li class="flex items-center justify-between"><span class="flex items-center gap-2"><i class="fa-solid fa-circle text-[8px] text-green-500"></i> Firebase Realtime Database</span><span class="font-mono text-slate-400">Connected</span></li>
+            <li class="flex items-center justify-between"><span class="flex items-center gap-2"><i class="fa-solid fa-circle text-[8px] text-green-500"></i> OneSignal API Campaign Webhooks</span><span class="font-mono text-slate-400">Initialized</span></li>
+            <li class="flex items-center justify-between"><span class="flex items-center gap-2"><i class="fa-solid fa-circle text-[8px] text-green-500"></i> Direct Cloudinary Assets Gateway</span><span class="font-mono text-slate-400" id="cloudinary-status-disp">Ready (Default)</span></li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- SECTION 2: COURSES MANAGEMENT (Field inputs, list, edit, delete, thumbnail upload) -->
+      <section id="crm-courses" class="admin-tab-container hidden space-y-6">
+        <!-- New Course Form -->
+        <div class="admin-card rounded-2xl p-6 space-y-4">
+          <h3 class="font-poppins font-bold text-sm text-white"><i class="fa-solid fa-square-plus text-blue-500 mr-2"></i> Create Standard Syllabus Course</h3>
+          
+          <form id="course-create-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Course Catalog Name</label>
+              <input type="text" id="course-name-field" required placeholder="e.g. CTET July Complete Preparation Batch" class="w-full text-xs text-white bg-white/[0.04] p-3 border border-white/5 rounded-xl focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Expert Teacher Name</label>
+              <input type="text" id="course-teacher-field" required placeholder="e.g. Roli Pandey" class="w-full text-xs text-white bg-white/[0.04] p-3 border border-white/5 rounded-xl focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Course Validity Days</label>
+              <input type="number" id="course-val-field" value="365" required class="w-full text-xs text-white bg-white/[0.04] p-3 border border-white/5 rounded-xl focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Standard Tuition Price (₹)</label>
+              <input type="number" id="course-price-field" value="199" readonly class="w-full text-xs text-slate-400 bg-white/[0.02] p-3 border border-white/5 rounded-xl font-bold font-mono">
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Topic Description / Overview Details</label>
+              <textarea id="course-desc-field" rows="2" placeholder="Detail course study guidelines..." class="w-full text-xs text-white bg-white/[0.04] p-3 border border-white/5 rounded-xl focus:outline-none focus:border-blue-500"></textarea>
+            </div>
+            
+            <!-- Direct Cloudinary Image Uploader -->
+            <div class="md:col-span-2 space-y-2">
+              <label class="block text-[10px] uppercase font-bold text-slate-400">Upload Banner Thumbnail (Direct to Cloudinary)</label>
+              <div class="flex items-center gap-3">
+                <input type="file" id="course-thumb-file" accept="image/*" class="text-xs text-slate-400 bg-white/[0.04] file:bg-blue-600 file:border-none file:text-white file:px-4 file:py-2 file:rounded-xl file:text-xs">
+                <input type="text" id="course-thumb-url" readonly placeholder="Calculated Asset URL" class="flex-grow text-xs text-emerald-400 bg-white/[0.02] border border-white/5 p-2 rounded-lg font-mono">
+              </div>
+              <div id="course-thumb-progress" class="hidden text-[10px] text-blue-400"><i class="fa-solid fa-spinner animate-spin"></i> File uploading onto cloud directory...</div>
+            </div>
+
+            <div class="md:col-span-2">
+              <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 transition text-xs font-bold uppercase rounded-xl tracking-wider">Save Unbiased Course Node</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="admin-card rounded-2xl overflow-hidden">
+          <div class="p-4 border-b border-white/5 font-semibold text-xs text-slate-400 uppercase tracking-wider">Registered Courses Stream</div>
+          <div id="admin-courses-stream" class="divide-y divide-white/5 max-h-72 overflow-y-auto fancy-scrollbar text-xs">
+            <!-- Course Node listings -->
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3: SYLLABUS DIRECTORY (Subject -> Chapter -> Lecture) -->
+      <section id="crm-lectures" class="admin-tab-container hidden space-y-6">
+        <div class="admin-card rounded-2xl p-6 space-y-5">
+          <h3 class="font-poppins font-bold text-sm text-white"><i class="fa-solid fa-list-check text-blue-500 mr-2"></i> syllabus Structure & Video Lecturing Manager</h3>
+          
+          <div class="space-y-4">
+            <!-- Multi-Select course target -->
+            <div>
+              <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Select Course Target</label>
+              <select id="syl-course-select" onchange="loadSyllabusHierarchyForSyllabus()" class="w-full text-xs text-white bg-white/[0.04] p-3 border border-white/5 rounded-xl">
+                <!-- Courses loaded dynamically -->
+              </select>
+            </div>
+
+            <!-- Drill-downs layout grids -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <!-- Element A: Create Subject Node -->
+              <div class="bg-white/[0.01] border border-white/5 p-4 rounded-xl space-y-3">
+                <span class="block text-[10px] font-extrabold uppercase text-blue-400 font-poppins">1. Add Subject Node</span>
+                <input type="text" id="syl-sub-name" placeholder="e.g. Pedagogy & Child Dev" class="w-full text-xs text-white bg-white/[0.04] p-2.5 rounded-lg border border-white/5 focus:outline-none">
+                <button onclick="writeSyllabusSubject()" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-[10px] font-bold rounded-lg transition">Create Subject</button>
+              </div>
+
+              <!-- Element B: Create Chapter Node -->
+              <div class="bg-white/[0.01] border border-white/5 p-4 rounded-xl space-y-3">
+                <span class="block text-[10px] font-extrabold uppercase text-blue-400 font-poppins">2. Add Chapter Core</span>
+                <select id="syl-sub-select" class="w-full text-xs text-white bg-white/[0.04] p-2.5 rounded-lg border border-white/5">
+                  <!-- Selected course subjects loaded -->
+                </select>
+                <input type="text" id="syl-chap-name" placeholder="e.g. Piaget Theories" class="w-full text-xs text-white bg-white/[0.04] p-2.5 rounded-lg border border-white/5 focus:outline-none">
+                <button onclick="writeSyllabusChapter()" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-[10px] font-bold rounded-lg transition">Create Chapter</button>
+              </div>
+
+              <!-- Element C: Create Lecture Node -->
+              <div class="bg-white/[0.01] border border-white/5 p-4 rounded-xl space-y-3">
+                <span class="block text-[10px] font-extrabold uppercase text-blue-400 font-poppins">3. Lecture Video Details</span>
+                <select id="syl-chap-select" class="w-full text-xs text-white bg-white/[0.04] p-2.5 rounded-lg border border-white/5">
+                  <!-- Selected subject chapters loaded -->
+                </select>
+                <input type="text" id="syl-lec-title" placeholder="Lecture Session Title" class="w-full text-xs text-white bg-white/[0.04] p-2 rounded-lg border border-white/5 focus:outline-none">
+                <input type="text" id="syl-lec-url" placeholder="YouTube URL (Unlisted)" class="w-full text-xs text-white bg-white/[0.04] p-2 rounded-lg border border-white/5 focus:outline-none text-blue-400">
+                <input type="text" id="syl-lec-duration" placeholder="Duration e.g. 45 Mins" class="w-full text-xs text-white bg-white/[0.04] p-2 rounded-lg border border-white/5 focus:outline-none">
+                <button onclick="writeSyllabusLecture()" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-[10px] font-bold rounded-lg transition">Create Lecture Node</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-card rounded-2xl p-5 space-y-3">
+          <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Course Syllabus Tree View</span>
+          <div id="admin-syllabus-tree" class="space-y-3 text-xs max-h-72 overflow-y-auto fancy-scrollbar">
+            <!-- Render tree selection -->
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 4: LIVE CALENDAR STREAM SCHEDULERS -->
+      <section id="crm-lives" class="admin-tab-container hidden space-y-6">
+        <div class="admin-card rounded-2xl p-6 space-y-4">
+          <h3 class="font-poppins font-bold text-sm text-white"><i class="fa-solid fa-tower-broadcast text-red-500 mr-2"></i> Schedule Synchronized Live Training Sessions</h3>
+          
+          <form id="live-schedule-form" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Live Topic Title</label>
+                <input type="text" id="live-title-val" required placeholder="e.g. Pedagogy Doubt Session livestream" class="w-full text-xs text-white bg-white/[0.04] p-3 border border-white/5 rounded-xl">
+              </div>
+              <div>
+                <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Date & Time</label>
+                <input type="text" id="live-time-val" required placeholder="e.g. 05th July, 05:00 PM IST" class="w-full text-xs text-white bg-white/[0.04] p-3 border border-white/5 rounded-xl">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">YouTube Live Broadcast URL</label>
+                <input type="text" id="live-url-val" required placeholder="e.g. https://www.youtube.com/live/ABCD" class="w-full text-xs text-white bg-white/[0.04] p-3 border border-white/5 rounded-xl text-red-400">
+              </div>
+            </div>
+            <button type="submit" class="w-full py-3 bg-red-600 hover:bg-red-700 text-xs font-extrabold uppercase rounded-xl tracking-wider">Broaden Live Stream</button>
+          </form>
+        </div>
+
+        <div class="admin-card rounded-2xl overflow-hidden">
+          <div class="p-4 border-b border-white/5 font-semibold text-xs text-slate-400 uppercase">Scheduled Streams Stream</div>
+          <div id="admin-lives-stream" class="divide-y divide-white/5 text-xs max-h-60 overflow-y-auto fancy-scrollbar">
+            <!-- Live slots listed -->
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 5: NOTES & PDF DIRECT DIRECTORY UPLOAD -->
+      <section id="crm-pdfs" class="admin-tab-container hidden space-y-6">
+        <div class="admin-card rounded-2xl p-6 space-y-4">
+          <h3 class="font-poppins font-bold text-sm text-white"><i class="fa-solid fa-cloud-arrow-up text-blue-500 mr-2"></i> Register Class Lectures Study Notes PDF</h3>
+          
+          <form id="pdf-upload-form" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Study Notes PDF Title</label>
+                <input type="text" id="pdf-title-val" required placeholder="e.g. Environmental Studies Chapter 1 Notes" class="w-full text-xs text-white bg-white/[0.04] p-3 border border-white/5 rounded-xl">
+              </div>
+              <div>
+                <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Notes Subject Tag</label>
+                <input type="text" id="pdf-subject-val" required placeholder="e.g. EVS - Primary Prep" class="w-full text-xs text-white bg-white/[0.04] p-3 border border-white/5 rounded-xl">
+              </div>
+            </div>
+
+            <!-- Cloudinary PDF Direct File Picker -->
+            <div class="space-y-2 border border-dashed border-white/10 p-5 rounded-2xl text-center">
+              <i class="fa-solid fa-file-pdf text-3xl text-red-500 block mb-2"></i>
+              <label class="block text-xs font-bold text-slate-300">Choose PDF Document to Host</label>
+              <input type="file" id="pdf-source-file" accept="application/pdf" class="text-xs text-slate-400 mx-auto bg-white/[0.02] file:bg-blue-600 file:border-none file:text-white file:px-4 file:py-1.5 file:rounded-xl file:text-xs">
+              <input type="text" id="pdf-uploaded-url" readonly placeholder="Secure Cloudinary Link Output" class="w-full text-xs text-emerald-400 text-center bg-white/[0.02] border border-white/10 p-2 rounded-lg font-mono">
+              <div id="pdf-upload-progress" class="hidden text-xs text-blue-400 animate-pulse mt-2"><i class="fa-solid fa-spinner animate-spin"></i> Direct Cloudinary ingestion stream transmitting...</div>
+            </div>
+
+            <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-xs font-bold uppercase rounded-xl tracking-wider">Catalog PDF Study Material</button>
+          </form>
+        </div>
+
+        <div class="admin-card rounded-2xl overflow-hidden">
+          <div class="p-4 border-b border-white/5 font-semibold text-xs text-slate-400 uppercase">Catalogued PDFs Ledger</div>
+          <div id="admin-pdfs-stream" class="divide-y divide-white/5 text-xs max-h-60 overflow-y-auto fancy-scrollbar">
+            <!-- Directory listings -->
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 6: QUIZZES AND EXAMINATIONS -->
+      <section id="crm-quizzes" class="admin-tab-container hidden space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Box A: Construct Quiz -->
+          <div class="admin-card p-5 rounded-2xl space-y-4 border border-white/5 h-fit">
+            <span class="block text-xs font-bold uppercase text-blue-400 font-poppins"><i class="fa-solid fa-list-check"></i> 1. Prepare Mock Test Registry</span>
+            <form id="quiz-builder-form" class="space-y-3">
+              <div>
+                <label class="block text-[10px] uppercase font-bold text-slate-500">Test Title</label>
+                <input type="text" id="quiz-title-field" required placeholder="e.g. Pedagogy Test Series 01" class="w-full text-xs text-white bg-white/[0.04] p-2.5 rounded-lg border border-white/5 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] uppercase font-bold text-slate-500">Subject Tag</label>
+                <input type="text" id="quiz-category-field" required placeholder="e.g. Pedagogy" class="w-full text-xs text-white bg-white/[0.04] p-2.5 rounded-lg border border-white/5 focus:outline-none">
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[10px] uppercase font-bold text-slate-500">Duration (Mins)</label>
+                  <input type="number" id="quiz-duration-field" value="5" class="w-full text-xs text-white bg-white/[0.04] p-2.5 rounded-lg border border-white/5">
+                </div>
+                <div>
+                  <label class="block text-[10px] uppercase font-bold text-slate-500">Weightage Marks</label>
+                  <input type="number" id="quiz-weight-field" value="10" class="w-full text-xs text-white bg-white/[0.04] p-2.5 rounded-lg border border-white/5">
+                </div>
+              </div>
+              <button type="submit" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-[10px] uppercase font-bold rounded-lg transition tracking-wider">Save Test Block</button>
+            </form>
+          </div>
+
+          <!-- Box B: Construct Questions -->
+          <div class="admin-card p-5 rounded-2xl space-y-4 border border-white/5">
+            <span class="block text-xs font-bold uppercase text-blue-400 font-poppins"><i class="fa-solid fa-circle-question"></i> 2. Append Questions to Test</span>
+            <form id="quiz-question-form" class="space-y-3">
+              <div>
+                <label class="block text-[10px] uppercase font-bold text-slate-500">Choose Target Test Node</label>
+                <select id="q-test-select" class="w-full text-xs text-white bg-white/[0.04] p-2.5 rounded-lg border border-white/5">
+                  <!-- Dynamic test selector -->
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] uppercase font-bold text-slate-500">Question Formulation Text</label>
+                <textarea id="q-text-field" required rows="2" placeholder="Write the question body item..." class="w-full text-xs text-white bg-white/[0.04] p-2.5 rounded-lg border border-white/5 focus:outline-none"></textarea>
+              </div>
+              
+              <!-- Core options -->
+              <div class="space-y-2">
+                <label class="block text-[10px] uppercase font-bold text-slate-500">Answer Options Formulation</label>
+                <input type="text" id="q-optA-field" required placeholder="Option A Text" class="w-full text-xs text-white bg-white/[0.04] p-2 rounded border border-white/5 focus:outline-none">
+                <input type="text" id="q-optB-field" required placeholder="Option B Text" class="w-full text-xs text-white bg-white/[0.04] p-2 rounded border border-white/5 focus:outline-none">
+                <input type="text" id="q-optC-field" required placeholder="Option C Text" class="w-full text-xs text-white bg-white/[0.04] p-2 rounded border border-white/5 focus:outline-none">
+                <input type="text" id="q-optD-field" required placeholder="Option D Text" class="w-full text-xs text-white bg-white/[0.04] p-2 rounded border border-white/5 focus:outline-none">
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[10px] uppercase font-bold text-slate-500">Correct Option</label>
+                  <select id="q-correct-select" class="w-full text-xs text-white bg-white/[0.04] p-2 rounded border border-white/5">
+                    <option value="0">Option A</option>
+                    <option value="1">Option B</option>
+                    <option value="2">Option C</option>
+                    <option value="3">Option D</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[10px] uppercase font-bold text-slate-500">Doubt Explanation</label>
+                  <input type="text" id="q-exp-field" placeholder="Provide answer reasoning explanation..." class="w-full text-xs text-white bg-white/[0.04] p-2 rounded border border-white/5 focus:outline-none">
+                </div>
+              </div>
+              <button type="submit" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-[10px] uppercase font-bold rounded-lg transition tracking-wider">Append Question Node</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="admin-card rounded-2xl overflow-hidden text-xs">
+          <div class="p-4 border-b border-white/5 font-semibold text-slate-400 uppercase tracking-wider text-[11px]">Questions and Tests Index</div>
+          <div id="admin-quizzes-stream" class="divide-y divide-white/5 max-h-64 overflow-y-auto fancy-scrollbar p-3 space-y-3">
+            <!-- Dynamic listings -->
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 7: DOUBT RESOLVER CONSOLE (Roli Pandey reply thread) -->
+      <section id="crm-doubts" class="admin-tab-container hidden space-y-6">
+        <div class="admin-card rounded-2xl p-6 space-y-4">
+          <h2 class="font-poppins font-bold text-base text-white"><i class="fa-solid fa-bell text-blue-500"></i> Doubt Query Solver Board</h2>
+          <p class="text-xs text-slate-400">Review, query, and reply directly to student doubt requests dynamically.</p>
+          
+          <div id="admin-doubts-stream" class="space-y-4 max-h-[440px] overflow-y-auto fancy-scrollbar">
+            <!-- Dynamic Query resolution components with input fields -->
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 8: STUDENT REGISTRIES -->
+      <section id="crm-students" class="admin-tab-container hidden space-y-6">
+        <div class="admin-card rounded-2xl overflow-hidden text-xs">
+          <div class="p-4 border-b border-white/5 font-semibold text-slate-400 uppercase tracking-widest text-[11px]">Registered Student Profiles Directory</div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-white/5 border-b border-white/5 text-slate-450 uppercase text-[9px] font-bold">
+                  <th class="p-4">Student Name</th>
+                  <th class="p-4">Email ID</th>
+                  <th class="p-4">Referral Code</th>
+                  <th class="p-4">Earnings</th>
+                  <th class="p-4">Joined At</th>
+                </tr>
+              </thead>
+              <tbody id="student-table-body" class="divide-y divide-white/5 text-slate-300">
+                <!-- Registrations lists -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 9: FINANCE GROSS LEDGER & INVOICES -->
+      <section id="crm-ledger" class="admin-tab-container hidden space-y-6">
+        <div class="admin-card rounded-2xl overflow-hidden text-xs">
+          <div class="p-4 border-b border-white/5 font-semibold text-slate-400 uppercase tracking-wider text-[11px]">Transactions ledger list</div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-white/5 border-b border-white/5 text-slate-450 uppercase text-[9px] font-bold">
+                  <th class="p-4">Payment ID / Transaction ID</th>
+                  <th class="p-4">Student UID</th>
+                  <th class="p-4">Course Id</th>
+                  <th class="p-4">Amount Paid</th>
+                  <th class="p-4">Gateway Status</th>
+                  <th class="p-4">Purchase Date</th>
+                </tr>
+              </thead>
+              <tbody id="ledger-table-body" class="divide-y divide-white/5 text-slate-300">
+                <!-- Ledger entries -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 10: CAROUSEL BANNER & DECORATORS -->
+      <section id="crm-banners" class="admin-tab-container hidden space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="admin-card p-5 rounded-2xl space-y-4 border border-white/5 h-fit">
+            <span class="block text-xs font-bold uppercase text-blue-400 font-poppins"><i class="fa-solid fa-rectangle-ad"></i> Add Promotion Slide</span>
+            <form id="banner-build-form" class="space-y-3">
+              <div>
+                <label class="block text-[10px] uppercase font-bold text-slate-500">Promo Title</label>
+                <input type="text" id="ban-title-field" required placeholder="e.g. Join CTET July Batches Now" class="w-full text-xs text-white bg-white/[0.04] p-2.5 rounded-lg border border-white/5">
+              </div>
+              <div class="space-y-1">
+                <label class="block text-[10px] uppercase font-bold text-slate-500">Slide Picture File (Direct Cloudinary upload)</label>
+                <input type="file" id="ban-img-file" accept="image/*" class="text-xs text-slate-400 bg-white/[0.02] file:bg-blue-600 file:border-none file:text-white file:px-3 file:py-1.5 file:rounded-xl file:text-xs">
+                <input type="text" id="ban-img-url" readonly placeholder="Output Cloud Link" class="w-full text-[10px] text-emerald-400 bg-white/[0.02] border border-white/5 p-2 rounded-lg font-mono">
+                <div id="ban-progress" class="hidden text-[9px] text-blue-400"><i class="fa-solid fa-spinner animate-spin"></i> Direct cloud storage streaming...</div>
+              </div>
+              <button type="submit" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-[10px] uppercase font-bold rounded-lg transition tracking-wide">Save Banner Slide</button>
+            </form>
+          </div>
+
+          <div class="admin-card p-5 rounded-2xl space-y-4 border border-white/5 h-fit">
+            <span class="block text-xs font-bold uppercase text-blue-400 font-poppins"><i class="fa-solid fa-award"></i> Elite Toppers List</span>
+            <form id="topper-build-form" class="space-y-3">
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[10px] uppercase font-bold text-slate-500">Aspirant Name</label>
+                  <input type="text" id="top-name-field" required placeholder="name" class="w-full text-xs text-white bg-white/[0.04] p-2 rounded-lg border border-white/5">
+                </div>
+                <div>
+                  <label class="block text-[10px] uppercase font-bold text-slate-500">Exam Qualified</label>
+                  <input type="text" id="top-exam-field" required placeholder="e.g. CTET July" class="w-full text-xs text-white bg-white/[0.04] p-2 rounded-lg border border-white/5">
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[10px] uppercase font-bold text-slate-500">Rank/Score</label>
+                  <input type="text" id="top-rank-field" placeholder="Score: 138/150" class="w-full text-xs text-white bg-white/[0.04] p-2 rounded-lg border border-white/5">
+                </div>
+                <div>
+                  <label class="block text-[10px] uppercase font-bold text-slate-500">Cloud Photo Uploader</label>
+                  <input type="file" id="top-img-file" accept="image/*" class="text-[9px] text-slate-400 bg-white/[0.02] p-1.5 border border-white/5">
+                  <input type="hidden" id="top-img-url">
+                </div>
+              </div>
+              <button type="submit" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-[10px] uppercase font-bold rounded-lg transition">Save Topper</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    // 1. SECURE CREDENTIALS PASSPHRASE AUTH
+    document.getElementById('admin-gate-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const role = document.getElementById('auth-admin-role').value;
+      const pass = document.getElementById('auth-admin-pin').value;
+
+      // Unbiased PIN checking
+      const roliPass = "ROLI2026";
+      const superPass = "SUPER9415";
+
+      if ((role === 'roli_pandey' && pass === roliPass) || (role === 'super_admin' && pass === superPass)) {
+        document.getElementById('admin-auth-guard').classList.add('hidden');
+        document.getElementById('active-role-disp').innerText = role === 'roli_pandey' ? "Roli Pandey (Teacher)" : "Super Admin";
+        
+        // Start live sync of dashboard CRM indicators
+        syncCRMDataPanels();
+      } else {
+        alert("❌ Access denied. Secure Administrative PIN/pass key parameters mismatch.");
+      }
+    });
+
+    // 2. RETRIEVE FIREBASE DIRECTIVES & CONFIGS
+    const firebaseConfig = {
+      apiKey: "AIzaSyAmr4fNTo4Y0POcpTNVBu-q53fk3qp9Wc4",
+      authDomain: "ed-achievers-78a7a.firebaseapp.com",
+      databaseURL: "https://ed-achievers-78a7a-default-rtdb.firebaseio.com",
+      projectId: "ed-achievers-78a7a",
+      storageBucket: "ed-achievers-78a7a.firebasestorage.app",
+      messagingSenderId: "847148437866",
+      appId: "1:847148437866:web:2fb7af2e6fba034cd91513",
+      measurementId: "G-J9M6DTJT7Q"
+    };
+
+    // LOCAL SANDBOX REALTIME DATABASE FALLBACK EMULATOR FOR ROBUSTNESS
+    class FallbackFirebaseDB {
+      constructor() {
+        this.storageKey = 'ed_achievers_local_db';
+        if (!localStorage.getItem(this.storageKey)) {
+          const initialSeed = {
+            courses: {
+              "CRS-seed-ctet1": {
+                name: "CTET Paper 1 (Complete Prep)",
+                teacher: "Roli Pandey",
+                validity: 365,
+                price: 199,
+                description: "High-yield video lectures, child pedagogy guides, master mock series designed to clear secondary parameters on first attempt.",
+                thumbnail: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&q=80&w=600"
+              },
+              "CRS-seed-ctet2": {
+                name: "CTET Paper 2 (Science & Math)",
+                teacher: "Roli Pandey",
+                validity: 365,
+                price: 199,
+                description: "Step-by-step math and cognitive science conceptual analysis. Full syllabus coverage with direct reference notes.",
+                thumbnail: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80&w=600"
+              }
+            },
+            subjects: {
+              "CRS-seed-ctet1": {
+                "SUB-seed-1": { name: "Child Development & Pedagogy" }
+              }
+            },
+            chapters: {
+              "CRS-seed-ctet1": {
+                "SUB-seed-1": {
+                  "CHAP-seed-1": { name: "Piaget & Vygotsky Theories" }
+                }
+              }
+            },
+            lectures: {
+              "CRS-seed-ctet1": {
+                "SUB-seed-1": {
+                  "CHAP-seed-1": {
+                    "LEC-seed-1": {
+                      title: "Constructivism & Social Development Lecture",
+                      youtubeUrl: "https://www.youtube.com/watch?v=yY-S5XAGm1g",
+                      duration: "45 Mins"
+                    }
+                  }
+                }
+              }
+            },
+            tests: {
+              "TST-seed-1": {
+                title: "Pedagogy Fundamental Quiz 01",
+                subject: "Pedagogy",
+                durationMinutes: 5,
+                totalMarks: 10
+              }
+            },
+            questions: {
+              "TST-seed-1": {
+                "Q-seed-1": {
+                  text: "Which of the following describes Lev Vygotsky's Zone of Proximal Development?",
+                  options: [
+                    "The range of tasks that a child can complete independently.",
+                    "The range of tasks that are too difficult for a child to master alone but can be learned with guidance.",
+                    "The level of cognitive development a child achieves through physical play.",
+                    "A strict state of cognitive disequilibrium."
+                  ],
+                  answer: 1,
+                  explanation: "Vygotsky's Zone of Proximal Development (ZPD) represents the gap between absolute independent capability and assisted capacity under pedagogical scaffolds."
+                },
+                "Q-seed-2": {
+                  text: "According to Jean Piaget, during which stage do children develop object permanence?",
+                  options: [
+                    "Sensorimotor Stage",
+                    "Preoperational Stage",
+                    "Concrete Operational Stage",
+                    "Formal Operational Stage"
+                  ],
+                  answer: 0,
+                  explanation: "Object permanence emerges during the sensorimotor stage (birth to ~2 years) as toddlers realize objects continue to exist even when out of view."
+                }
+              }
+            },
+            liveClasses: {},
+            pdfs: {
+              "PDF-seed-1": {
+                title: "Child Pedagogy Master Notes (Revision)",
+                subject: "Pedagogy",
+                url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+                uploadedAt: new Date().toISOString()
+              }
+            },
+            toppers: {},
+            testimonials: {},
+            banners: {}
+          };
+          localStorage.setItem(this.storageKey, JSON.stringify(initialSeed));
+        }
+      }
+
+      _getData() {
+        return JSON.parse(localStorage.getItem(this.storageKey) || '{}');
+      }
+
+      _setData(data) {
+        localStorage.setItem(this.storageKey, JSON.stringify(data));
+        if (this.listeners) {
+          for (let path in this.listeners) {
+            this.listeners[path].forEach(cb => {
+              cb(new FallbackSnapshot(this._getNestedValue(data, path)));
+            });
+          }
+        }
+      }
+
+      _getNestedValue(obj, path) {
+        if (!path || path === '/') return obj;
+        const parts = path.split('/').filter(Boolean);
+        let curr = obj;
+        for (let part of parts) {
+          if (curr && typeof curr === 'object') {
+            curr = curr[part];
+          } else {
+            return undefined;
+          }
+        }
+        return curr === undefined ? null : curr;
+      }
+
+      _setNestedValue(obj, path, val) {
+        const parts = path.split('/').filter(Boolean);
+        let curr = obj;
+        for (let i = 0; i < parts.length - 1; i++) {
+          const part = parts[i];
+          if (!curr[part] || typeof curr[part] !== 'object') {
+            curr[part] = {};
+          }
+          curr = curr[part];
+        }
+        const lastPart = parts[parts.length - 1];
+        if (lastPart) {
+          curr[lastPart] = val;
+        } else {
+          Object.assign(obj, val);
+        }
+      }
+
+      ref(path) {
+        return new FallbackRef(this, path);
+      }
+    }
+
+    class FallbackRef {
+      constructor(db, path) {
+        this.db = db;
+        this.path = path || '';
+      }
+
+      child(subPath) {
+        return new FallbackRef(this.db, `${this.path}/${subPath}`);
+      }
+
+      once(event, callback) {
+        const data = this.db._getData();
+        const val = this.db._getNestedValue(data, this.path);
+        const snap = new FallbackSnapshot(val);
+        if (callback) {
+          callback(snap);
+          return Promise.resolve(snap);
+        }
+        return Promise.resolve(snap);
+      }
+
+      on(event, callback) {
+        if (!this.db.listeners) this.db.listeners = {};
+        if (!this.db.listeners[this.path]) this.db.listeners[this.path] = [];
+        this.db.listeners[this.path].push(callback);
+        
+        const data = this.db._getData();
+        const val = this.db._getNestedValue(data, this.path);
+        callback(new FallbackSnapshot(val));
+        return callback;
+      }
+
+      off(event, callback) {
+        if (this.db.listeners && this.db.listeners[this.path]) {
+          if (callback) {
+            this.db.listeners[this.path] = this.db.listeners[this.path].filter(cb => cb !== callback);
+          } else {
+            delete this.db.listeners[this.path];
+          }
+        }
+      }
+
+      set(val) {
+        const data = this.db._getData();
+        this.db._setNestedValue(data, this.path, val);
+        this.db._setData(data);
+        return Promise.resolve();
+      }
+
+      push(val) {
+        const key = 'PUSH_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+        const newRef = new FallbackRef(this.db, `${this.path}/${key}`);
+        if (val !== undefined) {
+          newRef.set(val);
+        }
+        return newRef;
+      }
+
+      update(val) {
+        const data = this.db._getData();
+        const curr = this.db._getNestedValue(data, this.path) || {};
+        if (curr && typeof curr === 'object') {
+          Object.assign(curr, val);
+          this.db._setNestedValue(data, this.path, curr);
+          this.db._setData(data);
+        } else {
+          this.set(val);
+        }
+        return Promise.resolve();
+      }
+
+      remove() {
+        const parts = this.path.split('/').filter(Boolean);
+        if (parts.length === 0) {
+          this.db._setData({});
+          return Promise.resolve();
+        }
+        const data = this.db._getData();
+        let curr = data;
+        for (let i = 0; i < parts.length - 1; i++) {
+          curr = curr[parts[i]];
+        }
+        if (curr && parts[parts.length - 1]) {
+          delete curr[parts[parts.length - 1]];
+        }
+        this.db._setData(data);
+        return Promise.resolve();
+      }
+
+      orderByChild(prop) {
+        this.orderProp = prop;
+        return this;
+      }
+
+      equalTo(targetVal) {
+        this.equalVal = targetVal;
+        return this;
+      }
+
+      limitToFirst(limit) {
+        this.limitCount = limit;
+        return this;
+      }
+    }
+
+    class FallbackSnapshot {
+      constructor(val) {
+        this._val = val;
+      }
+
+      val() {
+        return this._val;
+      }
+
+      exists() {
+        return this._val !== null && this._val !== undefined;
+      }
+    }
+
+    class FallbackAuth {
+      constructor() {
+        this.user = JSON.parse(localStorage.getItem('ed_achievers_user') || 'null');
+        this.authStateListeners = [];
+      }
+
+      onAuthStateChanged(callback) {
+        this.authStateListeners.push(callback);
+        callback(this.user);
+        return () => {
+          this.authStateListeners = this.authStateListeners.filter(cb => cb !== callback);
+        };
+      }
+
+      signInWithEmailAndPassword(email, password) {
+        const localUsers = JSON.parse(localStorage.getItem('ed_achievers_local_users') || '{}');
+        const u = localUsers[email.replace(/\./g, '_')];
+        if (u && u.password === password) {
+          this.user = { uid: u.uid, email: u.email, displayName: u.name };
+          localStorage.setItem('ed_achievers_user', JSON.stringify(this.user));
+          this.authStateListeners.forEach(cb => cb(this.user));
+          return Promise.resolve({ user: this.user });
+        }
+        return Promise.reject(new Error("Firebase Auth: Email or password mismatch. Please sign up first."));
+      }
+
+      createUserWithEmailAndPassword(email, password) {
+        const uid = 'USR-' + Date.now();
+        const newUser = { uid, email, displayName: email.split('@')[0] };
+        
+        const localUsers = JSON.parse(localStorage.getItem('ed_achievers_local_users') || '{}');
+        localUsers[email.replace(/\./g, '_')] = { uid, email, password };
+        localStorage.setItem('ed_achievers_local_users', JSON.stringify(localUsers));
+
+        this.user = newUser;
+        localStorage.setItem('ed_achievers_user', JSON.stringify(this.user));
+        this.authStateListeners.forEach(cb => cb(this.user));
+        return Promise.resolve({ user: this.user });
+      }
+
+      signOut() {
+        this.user = null;
+        localStorage.removeItem('ed_achievers_user');
+        this.authStateListeners.forEach(cb => cb(null));
+        return Promise.resolve();
+      }
+
+      sendPasswordResetEmail(email) {
+        return Promise.resolve();
+      }
+    }
+
+    // SAFE FIREBASE INITIALIZATION WRAPPER
+    let database;
+    let auth;
+    let isCloudDatabase = false;
+
+    if (typeof firebase !== 'undefined') {
+      try {
+        firebase.initializeApp(firebaseConfig);
+        database = firebase.database();
+        try {
+          auth = firebase.auth();
+        } catch (_) {}
+        isCloudDatabase = true;
+        console.log("Firebase Database core loaded seamlessly in cloud mode.");
+      } catch (e) {
+        console.warn("Firebase initialized failed. Activating local CRM storage emulator:", e);
+        bootstrapLocalEmulator();
+      }
+    } else {
+      console.warn("Gstatic Firebase script is currently blocked. Activating local CRM storage emulator.");
+      bootstrapLocalEmulator();
+    }
+
+    function bootstrapLocalEmulator() {
+      database = new FallbackFirebaseDB();
+      auth = new FallbackAuth();
+      isCloudDatabase = false;
+    }
+
+    // Update connection pill
+    window.addEventListener('DOMContentLoaded', () => {
+      const syncBadge = document.getElementById('sync-indicator');
+      if (syncBadge) {
+        if (isCloudDatabase) {
+          syncBadge.innerHTML = `<i class="fa-solid fa-circle text-[7px] text-green-500 mr-1 animate-pulse"></i> Cloud Connected (Realtime)`;
+        } else {
+          syncBadge.innerHTML = `<i class="fa-solid fa-circle text-[7px] text-blue-500 mr-1"></i> Sandbox Offline Mode (LocalStorage)`;
+          syncBadge.title = "Unreachable Firebase. All administrative additions and updates are synchronized in your browser cache.";
+        }
+      }
+    });
+
+    // CRM STATE VARIABLES
+    let dynamicCoursesList = {};
+    let dynamicTestsList = {};
+    
+    // Default Unsigned Cloudinary endpoint parameters
+    let cloudinaryCloudName = "djx5nm39b";
+    let cloudinaryUploadPreset = "ml_default";
+
+    // On-load local storage verification of preference settings
+    window.addEventListener('load', () => {
+      const storedName = localStorage.getItem('cl_name');
+      const storedPreset = localStorage.getItem('cl_preset');
+      if (storedName && storedPreset) {
+        cloudinaryCloudName = storedName;
+        cloudinaryUploadPreset = storedPreset;
+        document.getElementById('pref-cl-name').value = storedName;
+        document.getElementById('pref-cl-preset').value = storedPreset;
+        document.getElementById('cloudinary-status-disp').innerText = "Ready (Custom Configuration)";
+      } else {
+        document.getElementById('pref-cl-name').value = "djx5nm39b";
+        document.getElementById('pref-cl-preset').value = "ml_default";
+      }
+    });
+
+    function toggleCloudinarySettings() {
+      const panel = document.getElementById('cloudinary-settings-panel');
+      if (panel.classList.contains('hidden')) {
+        panel.classList.remove('hidden');
+      } else {
+        panel.classList.add('hidden');
+      }
+    }
+
+    function saveCloudinarySettings() {
+      const targetName = document.getElementById('pref-cl-name').value.trim();
+      const targetPreset = document.getElementById('pref-cl-preset').value.trim();
+      if (targetName && targetPreset) {
+        localStorage.setItem('cl_name', targetName);
+        localStorage.setItem('cl_preset', targetPreset);
+        cloudinaryCloudName = targetName;
+        cloudinaryUploadPreset = targetPreset;
+        document.getElementById('cloudinary-status-disp').innerText = "Ready (Custom Configuration)";
+        alert("Parameters updated satisfactorily!");
+        toggleCloudinarySettings();
+      }
+    }
+
+    // 3. CLOUDINARY FILE PICKER TRANSFERS (Image / PDF)
+    async function executeDirectCloudinaryUpload(fileElement, progressElement, outputURLElement) {
+      const file = fileElement.files[0];
+      if (!file) return;
+
+      progressElement.classList.remove('hidden');
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', cloudinaryUploadPreset);
+
+      try {
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/upload`, {
+          method: "POST",
+          body: formData
+        });
+        const details = await res.json();
+        progressElement.classList.add('hidden');
+        
+        if (details.secure_url) {
+          outputURLElement.value = details.secure_url;
+          alert("✓ Upload successfully stored in Cloudinary!");
+          return details.secure_url;
+        } else {
+          progressElement.classList.add('hidden');
+          alert("Cloudinary upload issue. Check if unsigned preset configuration is accurate.");
+        }
+      } catch (err) {
+        progressElement.classList.add('hidden');
+        console.error("Cloudinary connection failed:", err);
+        alert("Network failure accessing Cloudinary endpoints.");
+      }
+    }
+
+    // Bind Cloudinary upload flow to file picker boxes
+    document.getElementById('course-thumb-file').addEventListener('change', function() {
+      executeDirectCloudinaryUpload(this, document.getElementById('course-thumb-progress'), document.getElementById('course-thumb-url'));
+    });
+
+    document.getElementById('pdf-source-file').addEventListener('change', function() {
+      executeDirectCloudinaryUpload(this, document.getElementById('pdf-upload-progress'), document.getElementById('pdf-uploaded-url'));
+    });
+
+    document.getElementById('ban-img-file').addEventListener('change', function() {
+      executeDirectCloudinaryUpload(this, document.getElementById('ban-progress'), document.getElementById('ban-img-url'));
+    });
+
+    document.getElementById('top-img-file').addEventListener('change', function() {
+      const inp = document.getElementById('top-img-url');
+      const dummyProgress = { classList: { remove() {}, add() {} } }; // quick fallback mockup
+      executeDirectCloudinaryUpload(this, dummyProgress, inp);
+    });
+
+    // 4. TABBED SECTION ROUTER
+    function switchAdminSection(tabId) {
+      const views = ['stats', 'courses', 'lectures', 'lives', 'pdfs', 'quizzes', 'doubts', 'students', 'ledger', 'banners'];
+      views.forEach(v => {
+        const block = document.getElementById('crm-' + v);
+        if (block) block.classList.add('hidden');
+      });
+
+      document.getElementById('crm-' + tabId).classList.remove('hidden');
+
+      // Sidebar highlight state
+      const btns = document.querySelectorAll('.admin-nav-item');
+      btns.forEach(btn => {
+        btn.classList.add('text-slate-300', 'hover:bg-white/[0.03]');
+        btn.classList.remove('bg-blue-600', 'text-white');
+      });
+
+      // Simple click selection logic based on inner text
+      btns.forEach(btn => {
+        if (btn.getAttribute('onclick').includes(tabId)) {
+          btn.classList.remove('text-slate-300', 'hover:bg-white/[0.03]');
+          btn.classList.add('bg-blue-600', 'text-white');
+        }
+      });
+    }
+
+    // 5. CRM DATA SYNC PANELS
+    function syncCRMDataPanels() {
+      // 1. Sync courses stats
+      database.ref('courses').on('value', snap => {
+        dynamicCoursesList = snap.val() || {};
+        
+        // Count entries and revenue
+        const size = Object.keys(dynamicCoursesList).length;
+        document.getElementById('stat-total-courses').innerText = size;
+        
+        // Load courses forms
+        refreshCourseSelectionMenus();
+        renderAdminCoursesList();
+      });
+
+      // 2. Sync Quiz tests stats
+      database.ref('tests').on('value', snap => {
+        dynamicTestsList = snap.val() || {};
+        document.getElementById('stat-total-tests').innerText = Object.keys(dynamicTestsList).length;
+        
+        refreshQuizSelectionSelector();
+        renderQuizStreamDetails();
+      });
+
+      // 3. Sync doubts count
+      database.ref('doubts').on('value', snap => {
+        const doubts = snap.val() || {};
+        let unresolved = 0;
+        for (let k in doubts) {
+          if (doubts[k].status === 'Pending') unresolved++;
+        }
+        document.getElementById('stat-open-doubts').innerText = unresolved;
+        renderAdminDoubtQueriesSolver();
+      });
+
+      // 4. Sync registrations count
+      database.ref('users').on('value', snap => {
+        const list = snap.val() || {};
+        document.getElementById('stat-total-users').innerText = Object.keys(list).length;
+        renderStudentRegistriesTable(list);
+      });
+
+      // 5. Sync purchases sales amount count & gross revenue
+      database.ref('purchases').on('value', snap => {
+        const payload = snap.val() || {};
+        let totalValSales = 0;
+        let revenueSum = 0;
+
+        for (let uid in payload) {
+          for (let courseId in payload[uid]) {
+            totalValSales++;
+            revenueSum += parseFloat(payload[uid][courseId].amount || 199);
+          }
+        }
+        document.getElementById('stat-sales-count').innerText = totalValSales;
+        document.getElementById('stat-revenue').innerText = "₹" + revenueSum.toFixed(2);
+        
+        renderFinanceGrossLedgerTable(payload);
+      });
+
+      // 6. Sync standard calendars, PDFs and banners lists
+      renderLiveCalendarStreamTimelines();
+      renderCataloguedPdfsDetails();
+    }
+
+    // 6. COURSES CRUD MANAGER
+    document.getElementById('course-create-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const n = document.getElementById('course-name-field').value;
+      const t = document.getElementById('course-teacher-field').value;
+      const v = document.getElementById('course-val-field').value;
+      const d = document.getElementById('course-desc-field').value;
+      const thumb = document.getElementById('course-thumb-url').value;
+
+      const courseId = "CRS-" + Date.now();
+      database.ref('courses/' + courseId).set({
+        name: n,
+        teacher: t,
+        validity: parseInt(v),
+        description: d,
+        price: 199,
+        thumbnail: thumb || ""
+      }).then(() => {
+        alert("✓ Syllabus preparation course unblocked and saved.");
+        document.getElementById('course-create-form').reset();
+        document.getElementById('course-thumb-url').value = "";
+      });
+    });
+
+    function deleteCourseNode(courseId) {
+      if (confirm("Permanently destroy this course node and its components from CRM?")) {
+        database.ref('courses/' + courseId).remove().then(() => {
+          alert("✓ Removed satisfactorily.");
+        });
+      }
+    }
+
+    function renderAdminCoursesList() {
+      const parent = document.getElementById('admin-courses-stream');
+      parent.innerHTML = "";
+
+      let count = 0;
+      for (let courseId in dynamicCoursesList) {
+        count++;
+        const c = dynamicCoursesList[courseId];
+        const row = document.createElement('div');
+        row.className = "flex justify-between items-center p-3 hover:bg-white/[0.02]";
+        row.innerHTML = `
+          <div>
+            <h5 class="font-bold text-white">${c.name}</h5>
+            <span class="text-[9.5px] text-slate-500 font-mono">ID: ${courseId} &bull; Instructor: ${c.teacher || 'Roli Pandey'}</span>
+          </div>
+          <button onclick="deleteCourseNode('${courseId}')" class="text-xs bg-red-600/10 hover:bg-red-600/20 text-red-500 border border-red-500/20 rounded-lg px-2 py-1.5"><i class="fa-solid fa-trash"></i> Delete</button>
+        `;
+        parent.appendChild(row);
+      }
+      if (count === 0) {
+        parent.innerHTML = "<p class='p-4 text-slate-500'>Write and configure your first core syllabus batch using the builder above.</p>";
+      }
+    }
+
+    function refreshCourseSelectionMenus() {
+      const select = document.getElementById('syl-course-select');
+      select.innerHTML = "";
+      
+      for (let key in dynamicCoursesList) {
+        const option = document.createElement('option');
+        option.value = key;
+        option.innerText = dynamicCoursesList[key].name;
+        option.className = "bg-brand-dark";
+        select.appendChild(option);
+      }
+
+      // Initial load
+      loadSyllabusHierarchyForSyllabus();
+    }
+
+    // 7. SYLLABUS DRILL DOWNS CRUD
+    function loadSyllabusHierarchyForSyllabus() {
+      const courseId = document.getElementById('syl-course-select').value;
+      if (!courseId) return;
+
+      // Update Subjects Selection
+      const subSelect = document.getElementById('syl-sub-select');
+      subSelect.innerHTML = "";
+      
+      database.ref(`subjects/${courseId}`).once('value', snapshot => {
+        const subjects = snapshot.val() || {};
+        for (let key in subjects) {
+          const opt = document.createElement('option');
+          opt.value = key;
+          opt.innerText = subjects[key].name;
+          opt.className = "bg-brand-dark";
+          subSelect.appendChild(opt);
+        }
+        
+        // Trigger chapters
+        loadChaptersDropdownSelection();
+      });
+
+      // Synchronously render live tree catalog
+      renderSyllabusInteractiveTree(courseId);
+    }
+
+    document.getElementById('syl-sub-select').addEventListener('change', () => {
+      loadChaptersDropdownSelection();
+    });
+
+    function loadChaptersDropdownSelection() {
+      const courseId = document.getElementById('syl-course-select').value;
+      const subId = document.getElementById('syl-sub-select').value;
+      const chapSelect = document.getElementById('syl-chap-select');
+      chapSelect.innerHTML = "";
+
+      if (!courseId || !subId) return;
+
+      database.ref(`chapters/${courseId}/${subId}`).once('value', snapshot => {
+        const chapters = snapshot.val() || {};
+        for (let key in chapters) {
+          const opt = document.createElement('option');
+          opt.value = key;
+          opt.innerText = chapters[key].name;
+          opt.className = "bg-brand-dark";
+          chapSelect.appendChild(opt);
+        }
+      });
+    }
+
+    function writeSyllabusSubject() {
+      const courseId = document.getElementById('syl-course-select').value;
+      const subName = document.getElementById('syl-sub-name').value.trim();
+      if (!courseId || !subName) return;
+
+      const subId = "SUB-" + Date.now();
+      database.ref(`subjects/${courseId}/${subId}`).set({
+        name: subName
+      }).then(() => {
+        alert("Subject parameters written successfully.");
+        document.getElementById('syl-sub-name').value = "";
+        loadSyllabusHierarchyForSyllabus();
+      });
+    }
+
+    function writeSyllabusChapter() {
+      const courseId = document.getElementById('syl-course-select').value;
+      const subId = document.getElementById('syl-sub-select').value;
+      const chapName = document.getElementById('syl-chap-name').value.trim();
+      if (!courseId || !subId || !chapName) return alert("Select standard subject parameters first.");
+
+      const chapId = "CHAP-" + Date.now();
+      database.ref(`chapters/${courseId}/${subId}/${chapId}`).set({
+        name: chapName
+      }).then(() => {
+        alert("Chapter unit written satisfactorily.");
+        document.getElementById('syl-chap-name').value = "";
+        loadSyllabusHierarchyForSyllabus();
+      });
+    }
+
+    function writeSyllabusLecture() {
+      const courseId = document.getElementById('syl-course-select').value;
+      const subId = document.getElementById('syl-sub-select').value;
+      const chapId = document.getElementById('syl-chap-select').value;
+
+      const title = document.getElementById('syl-lec-title').value.trim();
+      const url = document.getElementById('syl-lec-url').value.trim();
+      const duration = document.getElementById('syl-lec-duration').value.trim();
+
+      if (!courseId || !subId || !chapId || !title || !url) return alert("Fill video lecture parameters before submitting.");
+
+      const lecId = "LEC-" + Date.now();
+      database.ref(`lectures/${courseId}/${subId}/${chapId}/${lecId}`).set({
+        title: title,
+        youtubeUrl: url,
+        duration: duration || "30 Mins"
+      }).then(() => {
+        alert("Video Lecture successfully indexed under syllabus chapter.");
+        document.getElementById('syl-lec-title').value = "";
+        document.getElementById('syl-lec-url').value = "";
+        document.getElementById('syl-lec-duration').value = "";
+        loadSyllabusHierarchyForSyllabus();
+      });
+    }
+
+    function renderSyllabusInteractiveTree(courseId) {
+      const tree = document.getElementById('admin-syllabus-tree');
+      tree.innerHTML = "";
+
+      database.ref(`subjects/${courseId}`).once('value', subSnap => {
+        const subjects = subSnap.val() || {};
+        for (let subId in subjects) {
+          const subNode = document.createElement('div');
+          subNode.className = "p-2 hover:bg-white/[0.01]";
+          subNode.innerHTML = `<span class="font-bold text-blue-400 uppercase tracking-widest"><i class="fa-solid fa-list-check"></i> Subject: ${subjects[subId].name}</span>`;
+          tree.appendChild(subNode);
+
+          // Render chapters nested inside
+          renderChaptersUnderSubjectInTree(courseId, subId, subNode);
+        }
+      });
+    }
+
+    function renderChaptersUnderSubjectInTree(courseId, subId, parentNode) {
+      database.ref(`chapters/${courseId}/${subId}`).once('value', chapSnap => {
+        const chapters = chapSnap.val() || {};
+        for (let chapId in chapters) {
+          const chapNode = document.createElement('div');
+          chapNode.className = "pl-4 pt-1.5 text-slate-300 font-semibold";
+          chapNode.innerHTML = `<span class="block">&bull; Chapter: ${chapters[chapId].name}</span>`;
+          parentNode.appendChild(chapNode);
+
+          // Render Lectures nested inside
+          renderLecturesUnderChapterInTree(courseId, subId, chapId, chapNode);
+        }
+      });
+    }
+
+    function renderLecturesUnderChapterInTree(courseId, subId, chapId, parentNode) {
+      database.ref(`lectures/${courseId}/${subId}/${chapId}`).once('value', lecSnap => {
+        const lectures = lecSnap.val() || {};
+        for (let lecId in lectures) {
+          const l = lectures[lecId];
+          const item = document.createElement('div');
+          item.className = "pl-6 text-[10.5px] text-slate-500 font-mono";
+          item.innerHTML = `<i class="fa-solid fa-circle-play text-red-500 mr-1.5"></i> ${l.title} (URL: ${l.youtubeUrl})`;
+          parentNode.appendChild(item);
+        }
+      });
+    }
+
+    // 8. LIVE SESSIONS CALENDAR STREAM
+    document.getElementById('live-schedule-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const title = document.getElementById('live-title-val').value;
+      const dateTime = document.getElementById('live-time-val').value;
+      const streamUrl = document.getElementById('live-url-val').value;
+
+      const streamId = "LIVE-" + Date.now();
+      database.ref('liveClasses/' + streamId).set({
+        title: title,
+        dateTime: dateTime,
+        youtubeLiveUrl: streamUrl,
+        status: "Live Scheduled"
+      }).then(() => {
+        alert("✓ Live broadcasting calendar session updated.");
+        document.getElementById('live-schedule-form').reset();
+        renderLiveCalendarStreamTimelines();
+      });
+    });
+
+    function renderLiveCalendarStreamTimelines() {
+      const parent = document.getElementById('admin-lives-stream');
+      parent.innerHTML = "";
+
+      database.ref('liveClasses').once('value', snapshot => {
+        const stream = snapshot.val() || {};
+        let count = 0;
+        for (let key in stream) {
+          count++;
+          const card = document.createElement('div');
+          card.className = "flex justify-between items-center p-3 hover:bg-white/[0.02]";
+          card.innerHTML = `
+            <div>
+              <h5 class="font-bold text-white capitalize">${stream[key].title}</h5>
+              <span class="text-[9.5px] text-slate-500 font-mono">${stream[key].dateTime} &bull; Stream URL: ${stream[key].youtubeLiveUrl}</span>
+            </div>
+            <button onclick="terminateLiveSessionStream('${key}')" class="text-xs bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/10 rounded-lg p-1.5 font-bold"><i class="fa-solid fa-trash-can"></i> Terminate</button>
+          `;
+          parent.appendChild(card);
+        }
+        if (count === 0) {
+          parent.innerHTML = "<p class='p-4 text-slate-500'>No active synchronized streams calendars registered.</p>";
+        }
+      });
+    }
+
+    function terminateLiveSessionStream(streamId) {
+      if (confirm("Cancel and delete this programmed live stream session?")) {
+        database.ref('liveClasses/' + streamId).remove().then(() => {
+          renderLiveCalendarStreamTimelines();
+        });
+      }
+    }
+
+    // 9. NOTES & PDF LIBRARY CRUD
+    document.getElementById('pdf-upload-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const title = document.getElementById('pdf-title-val').value;
+      const subTag = document.getElementById('pdf-subject-val').value;
+      const generatedLink = document.getElementById('pdf-uploaded-url').value;
+
+      if (!generatedLink) return alert("Select and upload pdf onto Cloudinary server first.");
+
+      const pdfId = "PDF-" + Date.now();
+      database.ref('pdfs/' + pdfId).set({
+        title: title,
+        subject: subTag,
+        url: generatedLink,
+        uploadedAt: new Date().toISOString()
+      }).then(() => {
+        alert("✓ Study PDF note logged into libraries database safely.");
+        document.getElementById('pdf-upload-form').reset();
+        document.getElementById('pdf-uploaded-url').value = "";
+        renderCataloguedPdfsDetails();
+      });
+    });
+
+    function renderCataloguedPdfsDetails() {
+      const parent = document.getElementById('admin-pdfs-stream');
+      parent.innerHTML = "";
+
+      database.ref('pdfs').once('value', snapshot => {
+        const list = snapshot.val() || {};
+        let count = 0;
+        for (let key in list) {
+          count++;
+          const row = document.createElement('div');
+          row.className = "flex justify-between items-center p-3 hover:bg-white/[0.02]";
+          row.innerHTML = `
+            <div>
+              <h5 class="font-bold text-white">${list[key].title}</h5>
+              <span class="text-[9.5px] text-slate-550 block font-mono">Subject Tag: ${list[key].subject} &bull; link: <a href="${list[key].url}" class="text-blue-400 underline" target="_blank">Open PDF File</a></span>
+            </div>
+            <button onclick="deletePdfLibraryNode('${key}')" class="text-xs text-red-500 bg-red-500/10 hover:bg-red-500/25 border border-red-500/10 rounded-lg p-1.5"><i class="fa-solid fa-trash"></i></button>
+          `;
+          parent.appendChild(row);
+        }
+        if (count === 0) {
+          parent.innerHTML = "<p class='p-4 text-slate-500'>Catalogue list currently empty. Select PDF notes above.</p>";
+        }
+      });
+    }
+
+    function deletePdfLibraryNode(pdfId) {
+      if (confirm("Destroy this PDF notes catalog node?")) {
+        database.ref('pdfs/' + pdfId).remove().then(() => {
+          renderCataloguedPdfsDetails();
+        });
+      }
+    }
+
+    // 10. QUIZZES AND EXAMINATIONS CREATOR
+    document.getElementById('quiz-builder-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const title = document.getElementById('quiz-title-field').value;
+      const sub = document.getElementById('quiz-category-field').value;
+      const dur = parseInt(document.getElementById('quiz-duration-field').value);
+      const weight = parseInt(document.getElementById('quiz-weight-field').value);
+
+      const testId = "TST-" + Date.now();
+      database.ref('tests/' + testId).set({
+        title: title,
+        subject: sub,
+        durationMinutes: dur,
+        totalMarks: weight
+      }).then(() => {
+        alert("✓ Structured Quiz test series folder generated.");
+        document.getElementById('quiz-builder-form').reset();
+      });
+    });
+
+    function refreshQuizSelectionSelector() {
+      const select = document.getElementById('q-test-select');
+      select.innerHTML = "";
+      
+      for (let testId in dynamicTestsList) {
+        const option = document.createElement('option');
+        option.value = testId;
+        option.innerText = dynamicTestsList[testId].title;
+        option.className = "bg-brand-dark";
+        select.appendChild(option);
+      }
+    }
+
+    document.getElementById('quiz-question-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const testId = document.getElementById('q-test-select').value;
+      const qText = document.getElementById('q-text-field').value;
+      const optA = document.getElementById('q-optA-field').value;
+      const optB = document.getElementById('q-optB-field').value;
+      const optC = document.getElementById('q-optC-field').value;
+      const optD = document.getElementById('q-optD-field').value;
+      const correctIdx = document.getElementById('q-correct-select').value;
+      const reasoning = document.getElementById('q-exp-field').value;
+
+      if (!testId) return alert("Select or generate standard mock test folders first.");
+
+      const qId = "Q-" + Date.now();
+      database.ref(`questions/${testId}/${qId}`).set({
+        text: qText,
+        options: [optA, optB, optC, optD],
+        answer: parseInt(correctIdx),
+        explanation: reasoning || "Reasoning logged."
+      }).then(() => {
+        alert("✓ Question node appended to selected Test collection.");
+        document.getElementById('q-text-field').value = "";
+        document.getElementById('q-optA-field').value = "";
+        document.getElementById('q-optB-field').value = "";
+        document.getElementById('q-optC-field').value = "";
+        document.getElementById('q-optD-field').value = "";
+        document.getElementById('q-exp-field').value = "";
+        
+        renderQuizStreamDetails();
+      });
+    });
+
+    function renderQuizStreamDetails() {
+      const parent = document.getElementById('admin-quizzes-stream');
+      parent.innerHTML = "";
+
+      let count = 0;
+      for (let testId in dynamicTestsList) {
+        count++;
+        const t = dynamicTestsList[testId];
+        const box = document.createElement('div');
+        box.className = "bg-white/[0.02] border border-white/5 p-4 rounded-2xl space-y-2";
+        
+        box.innerHTML = `
+          <div class="flex justify-between items-center text-xs font-bold text-blue-400">
+            <span>Test Series: ${t.title} (${t.subject})</span>
+            <button onclick="deleteQuizTestStructure('${testId}')" class="text-red-500 font-bold hover:underline"><i class="fa-solid fa-rectangle-xmark"></i> Delete Test</button>
+          </div>
+          <div id="nested-questions-${testId}" class="space-y-1.5 pl-3 border-l border-white/10">
+            <!-- Nested questions loaded dynamically -->
+          </div>
+        `;
+        parent.appendChild(box);
+
+        // Fetch questions nested inside
+        loadNestedQuestionsForTest(testId);
+      }
+      if (count === 0) {
+        parent.innerHTML = "<p class='text-slate-500 p-2'>No prep tests initialized.</p>";
+      }
+    }
+
+    function loadNestedQuestionsForTest(testId) {
+      const parent = document.getElementById(`nested-questions-${testId}`);
+      if (!parent) return;
+
+      database.ref(`questions/${testId}`).once('value', sn => {
+        const questions = sn.val() || {};
+        parent.innerHTML = "";
+
+        let idx = 0;
+        for (let qKey in questions) {
+          idx++;
+          const q = questions[qKey];
+          const p = document.createElement('p');
+          p.className = "text-[10px] text-slate-400 flex items-center justify-between";
+          p.innerHTML = `<span>Q${idx}: ${q.text}</span> <button onclick="deleteQuestionInsideTest('${testId}', '${qKey}')" class="text-red-400 hover:underline">Revoke</button>`;
+          parent.appendChild(p);
+        }
+        if (idx === 0) {
+          parent.innerHTML = "<span class='text-[9.5px] text-slate-600 font-mono'>No questions appended inside test unit yet.</span>";
+        }
+      });
+    }
+
+    function deleteQuestionInsideTest(testId, qId) {
+      if (confirm("Revoke this question node?")) {
+        database.ref(`questions/${testId}/${qId}`).remove().then(() => {
+          renderQuizStreamDetails();
+        });
+      }
+    }
+
+    function deleteQuizTestStructure(testId) {
+      if (confirm("Destroy complete test folder metrics?")) {
+        database.ref('tests/' + testId).remove().then(() => {
+          // Also clear keys questions database
+          database.ref(`questions/${testId}`).remove().then(() => {
+            renderQuizStreamDetails();
+          });
+        });
+      }
+    }
+
+    // 11. DOUBTS RESOLUTION SYSTEM CONTROL PANEL
+    function renderAdminDoubtQueriesSolver() {
+      const parent = document.getElementById('admin-doubts-stream');
+      if (!parent) return;
+      parent.innerHTML = "";
+
+      database.ref('doubts').on('value', snapshot => {
+        const doubts = snapshot.val() || {};
+        parent.innerHTML = "";
+
+        let found = 0;
+        for (let key in doubts) {
+          found++;
+          const d = doubts[key];
+          const detailBlock = document.createElement('div');
+          detailBlock.className = `p-4 rounded-2xl border ${d.status === 'Pending' ? 'bg-orange-500/5 border-orange-500/10' : 'bg-green-500/5 border-green-500/10'} space-y-3 text-xs`;
+          
+          let repliesHtml = "";
+          if (d.replies) {
+            for (let rKey in d.replies) {
+              const r = d.replies[rKey];
+              repliesHtml += `
+                <div class="bg-white/5 p-2 rounded-lg text-[10.5px]">
+                  <b class="text-blue-400 font-poppins text-[9.5px] block uppercase">${r.sender}</b>
+                  <p class="text-slate-300 mt-0.5">${r.text}</p>
+                </div>
+              `;
+            }
+          }
+
+          detailBlock.innerHTML = `
+            <div class="flex justify-between items-center text-[10px] font-mono">
+              <span class="text-slate-450 uppercase font-black tracking-wider"><i class="fa-solid fa-user-circle"></i> Student: ${d.studentName}</span>
+              <span class="text-orange-400 font-bold uppercase">${d.status}</span>
+            </div>
+            <p class="font-semibold text-slate-100 italic">"${d.queryTask}"</p>
+            ${repliesHtml ? `
+              <div class="space-y-1.5 pt-2 border-t border-white/5">
+                <span class="text-[9.5px] uppercase font-black tracking-widest text-slate-500 block">Historic Replies</span>
+                ${repliesHtml}
+              </div>
+            ` : ''}
+            
+            <!-- Type Reply Interface -->
+            <div class="pt-2 border-t border-white/5 flex gap-2">
+              <input type="text" id="reply-input-${key}" placeholder="Type reply as Expert Roli Pandey..." class="flex-grow px-3 py-2 bg-white/[0.04] p-2 border border-white/10 rounded-xl text-white focus:outline-none">
+              <button onclick="writeDoubtResolutionReply('${key}')" class="bg-blue-600 hover:bg-blue-700 active:scale-95 transition text-white px-4 rounded-xl font-bold">Reply</button>
+            </div>
+          `;
+          parent.appendChild(detailBlock);
+        }
+        if (found === 0) {
+          parent.innerHTML = "<p class='p-4 text-slate-550 text-center'>No student queries logged.</p>";
+        }
+      });
+    }
+
+    function writeDoubtResolutionReply(doubtId) {
+      const parentInput = document.getElementById('reply-input-' + doubtId);
+      const txt = parentInput.value.trim();
+      if (!txt) return;
+
+      const replyRef = database.ref(`doubts/${doubtId}/replies`).push();
+      replyRef.set({
+        sender: "Roli Pandey (Teacher Admin)",
+        text: txt,
+        timestamp: new Date().toISOString()
+      }).then(() => {
+        // Mark doubt as Resolved / Answered
+        database.ref(`doubts/${doubtId}/status`).set("Answered").then(() => {
+          parentInput.value = "";
+          alert("Reply dispatched successfully.");
+          renderAdminDoubtQueriesSolver();
+        });
+      });
+    }
+
+    // 12. STUDENT REGISTRY VIEWS
+    function renderStudentRegistriesTable(list) {
+      const parent = document.getElementById('student-table-body');
+      parent.innerHTML = "";
+
+      let count = 0;
+      for (let userId in list) {
+        count++;
+        const s = list[userId];
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-white/[0.01]";
+        
+        tr.innerHTML = `
+          <td class="p-4 font-semibold text-white">${s.name}</td>
+          <td class="p-4 font-mono text-slate-400">${s.email}</td>
+          <td class="p-4 font-mono text-blue-400">${s.referralCode || 'N/A'}</td>
+          <td class="p-4 font-mono text-green-400">₹${parseFloat(s.referralEarnings || 0).toFixed(2)}</td>
+          <td class="p-4 text-slate-500">${s.joinedAt ? s.joinedAt.split('T')[0] : 'Joined'}</td>
+        `;
+        parent.appendChild(tr);
+      }
+      if (count === 0) {
+        parent.innerHTML = "<tr><td colspan='5' class='p-4 text-center text-slate-500'>No active aspirant profiles directories recorded.</td></tr>";
+      }
+    }
+
+    // 13. FINANCE LEDGER REPORTS
+    function renderFinanceGrossLedgerTable(payload) {
+      const parent = document.getElementById('ledger-table-body');
+      parent.innerHTML = "";
+
+      let count = 0;
+      for (let uid in payload) {
+        for (let courseId in payload[uid]) {
+          count++;
+          const p = payload[uid][courseId];
+          const tr = document.createElement('tr');
+          tr.className = "hover:bg-white/[0.01]";
+          
+          tr.innerHTML = `
+            <td class="p-4 font-mono font-bold text-white">${p.paymentId || p.purchaseId}</td>
+            <td class="p-4 font-mono text-slate-500">${uid.substring(0, 8)}...</td>
+            <td class="p-4 font-mono text-blue-400">${courseId}</td>
+            <td class="p-4 font-mono text-green-400 font-bold">₹${parseFloat(p.amount || 199).toFixed(2)}</td>
+            <td class="p-4"><span class="px-2.5 py-1 bg-green-500/10 border border-green-500/20 text-green-450 uppercase rounded-full text-[9px] font-bold">Success</span></td>
+            <td class="p-4 text-slate-500">${p.purchaseDate ? p.purchaseDate.split('T')[0] : 'Completed'}</td>
+          `;
+          parent.appendChild(tr);
+        }
+      }
+      if (count === 0) {
+        parent.innerHTML = "<tr><td colspan='6' class='p-4 text-center text-slate-500'>Invoice transactions empty.</td></tr>";
+      }
+    }
+
+    // 14. BANNER & PROMO DECORATORS
+    document.getElementById('banner-build-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const title = document.getElementById('ban-title-field').value;
+      const url = document.getElementById('ban-img-url').value;
+
+      if (!url) return alert("Upload promotional files onto Cloudinary folder first.");
+
+      const bannerId = "BAN-" + Date.now();
+      database.ref(`banners/${bannerId}`).set({
+        title: title,
+        url: url,
+        active: true
+      }).then(() => {
+        alert("✓ Promos Carousel item initialized.");
+        document.getElementById('banner-build-form').reset();
+        document.getElementById('ban-img-url').value = "";
+      });
+    });
+
+    document.getElementById('topper-build-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const n = document.getElementById('top-name-field').value;
+      const ex = document.getElementById('top-exam-field').value;
+      const rank = document.getElementById('top-rank-field').value;
+      const photo = document.getElementById('top-img-url').value;
+
+      const topId = "TOP-" + Date.now();
+      database.ref(`toppers/${topId}`).set({
+        name: n,
+        exam: ex,
+        rank: rank || "Score: 140/150",
+        photoUrl: photo || ""
+      }).then(() => {
+        alert("✓ Elite toppers ledger updated successfully.");
+        document.getElementById('topper-build-form').reset();
+        document.getElementById('top-img-url').value = "";
+      });
+    });
+
+    function exitAdminCRM() {
+      // Clear authentication guard state and exit CRM
+      location.reload();
+    }
+  </script>
+</body>
+</html>

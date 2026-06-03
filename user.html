@@ -1,0 +1,2487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ed Achievers - Learn • Practice • Achieve</title>
+  <!-- Google Fonts & Font Awesome -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- CryptoJS for PayU Signing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  
+  <!-- Firebase Compat Core and Services CDNs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" crossorigin="anonymous"></script>
+  
+  <!-- OneSignal SDK -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            poppins: ['Poppins', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f5ff',
+              100: '#e0ebff',
+              200: '#c2d7ff',
+              500: '#2563eb',
+              600: '#1d4ed8',
+              700: '#1e40af',
+              900: '#1e3a8a',
+              dark: '#0b1329',
+              glass: 'rgba(15, 23, 42, 0.45)',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0b1329;
+      color: #f8fafc;
+    }
+    .fancy-scrollbar::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .fancy-scrollbar::-webkit-scrollbar-thumb {
+      background: #2563eb;
+      border-radius: 4px;
+    }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+    .neon-glow-blue {
+      box-shadow: 0 0 15px rgba(37, 99, 235, 0.35);
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-20 font-sans antialiased selection:bg-blue-600 selection:text-white">
+
+  <!-- TOP HEADER -->
+  <header id="app-header" class="sticky top-0 z-40 w-full px-4 py-3 bg-brand-dark/95 backdrop-blur-md border-b border-white/5 flex items-center justify-between">
+    <div class="flex items-center space-x-2">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center neon-glow-blue">
+        <i class="fa-solid fa-graduation-cap text-white text-lg"></i>
+      </div>
+      <div>
+        <h1 class="font-poppins font-bold text-lg leading-tight tracking-tight text-white">Ed Achievers</h1>
+        <p class="text-[10px] text-blue-400 font-medium uppercase tracking-widest leading-none">Learn • Practice • Achieve</p>
+        <span id="sync-indicator" class="text-[8px] text-slate-500 font-mono flex items-center gap-1 mt-1 leading-none"><i class="fa-solid fa-circle text-[6px]"></i> Initializing...</span>
+      </div>
+    </div>
+    
+    <!-- User/Status Action Menu -->
+    <div class="flex items-center space-x-3">
+      <div id="verified-badge" class="hidden px-2.5 py-1 text-[10px] font-bold bg-green-500/15 border border-green-500/30 text-green-400 rounded-full flex items-center gap-1">
+        <i class="fa-solid fa-circle-check"></i> Verified Student
+      </div>
+      <div id="user-avatar-btn" class="cursor-pointer flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-full border border-white/10 hover:bg-white/10 transition">
+        <i class="fa-solid fa-user text-blue-400 text-sm"></i>
+        <span id="header-user-name" class="text-xs font-semibold max-w-[80px] truncate text-slate-300">Login</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENTCONTAINERS / ROUTE WINDOWS -->
+  <main class="w-full max-w-md mx-auto px-4 py-4 space-y-6">
+
+    <!-- SPLASH SCREEN / LOADING WINDOW -->
+    <section id="splash-view" class="flex flex-col items-center justify-center py-20 text-center">
+      <div class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center mb-6 animate-pulse neon-glow-blue">
+        <i class="fa-solid fa-graduation-cap text-white text-4xl"></i>
+      </div>
+      <h2 class="font-poppins font-bold text-2xl text-white">Ed Achievers</h2>
+      <p class="text-blue-400 text-sm mt-1">Connecting to secure student servers...</p>
+      <div class="mt-8 flex gap-1.5">
+        <span class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-bounce" style="animation-delay: 0.1s"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-bounce" style="animation-delay: 0.2s"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-bounce" style="animation-delay: 0.3s"></span>
+      </div>
+    </section>
+
+    <!-- AUTHENTICATION PANELS (Login & Registration) -->
+    <section id="auth-view" class="hidden space-y-6">
+      <!-- Login Form Card -->
+      <div id="login-container" class="glass-card rounded-2xl p-6 space-y-4">
+        <h2 class="font-poppins font-semibold text-xl text-white flex items-center gap-2">
+          <i class="fa-solid fa-right-to-bracket text-blue-500"></i> Welcome Back Student
+        </h2>
+        <p class="text-xs text-slate-400">Unlock complete preparation parameters for government teaching exams.</p>
+        
+        <form id="login-form" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1.5">Registered Email ID</label>
+            <div class="relative">
+              <i class="fa-solid fa-envelope absolute left-3.5 top-3.5 text-slate-400/80 text-xs"></i>
+              <input type="email" id="login-email" required class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-sm text-white focus:outline-none focus:border-blue-500" placeholder="e.g. rahul@gmail.com">
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-semibold text-slate-400">Password</label>
+              <button type="button" onclick="forgotPassword()" class="text-xs text-blue-400 hover:underline">Forgot IP/Password?</button>
+            </div>
+            <div class="relative">
+              <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-slate-400/80 text-xs"></i>
+              <input type="password" id="login-password" required class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-sm text-white focus:outline-none focus:border-blue-500" placeholder="Enter secure password">
+            </div>
+          </div>
+          <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] transition rounded-xl font-bold text-sm">Secure Login</button>
+        </form>
+        
+        <div class="pt-4 border-t border-white/5 text-center">
+          <p class="text-xs text-slate-400">New Exam Aspirant? <button type="button" onclick="toggleAuth(false)" class="text-blue-400 font-bold hover:underline">Register Account Here</button></p>
+        </div>
+      </div>
+
+      <!-- Register Form Card -->
+      <div id="register-container" class="hidden glass-card rounded-2xl p-6 space-y-4">
+        <h2 class="font-poppins font-semibold text-xl text-white flex items-center gap-2">
+          <i class="fa-solid fa-user-plus text-blue-500"></i> Join Ed Achievers
+        </h2>
+        <p class="text-xs text-slate-400">Begin your success parameters for CTET, KVS, DSSSB, and TET courses.</p>
+        
+        <form id="register-form" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1.5">Aspirant's Name</label>
+            <div class="relative">
+              <i class="fa-solid fa-user absolute left-3.5 top-3.5 text-slate-400/80 text-xs"></i>
+              <input type="text" id="reg-name" required class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-sm text-white focus:outline-none focus:border-blue-500" placeholder="First and Last Name">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1.5">Email Address</label>
+            <div class="relative flex">
+              <i class="fa-solid fa-envelope absolute left-3.5 top-3.5 text-slate-400/80 text-xs"></i>
+              <input type="email" id="reg-email" required class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-sm text-white focus:outline-none focus:border-blue-500" placeholder="e.g. kiran@gmail.com">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1.5">Security Password (min 6 characters)</label>
+            <div class="relative">
+              <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-slate-400/80 text-xs"></i>
+              <input type="password" id="reg-password" minlength="6" required class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-sm text-white focus:outline-none focus:border-blue-500" placeholder="Choose secure password">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1.5">Referral Code (Optional - get ₹50 free wallet)</label>
+            <div class="relative">
+              <i class="fa-solid fa-ticket absolute left-3.5 top-3.5 text-slate-400/80 text-xs"></i>
+              <input type="text" id="reg-referred-by" class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-sm text-white uppercase focus:outline-none focus:border-blue-500" placeholder="e.g. REF1234">
+            </div>
+          </div>
+          <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] transition rounded-xl font-bold text-sm">Register and Get Started</button>
+        </form>
+        
+        <div class="pt-4 border-t border-white/5 text-center">
+          <p class="text-xs text-slate-400">Already Registered? <button type="button" onclick="toggleAuth(true)" class="text-blue-400 font-bold hover:underline">Identify Secure Login</button></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- LIVE HOME PAGE VIEW -->
+    <section id="home-view" class="hidden space-y-6">
+      
+      <!-- HERO CAROUSEL / PROMOTIONS -->
+      <div id="carousel-outer" class="relative overflow-hidden rounded-2xl h-44 glass-card shadow-lg">
+        <div id="carousel-strip" class="h-full flex transition-transform duration-500 ease-out">
+          <!-- Slide 1 -->
+          <div class="w-full flex-shrink-0 relative h-full bg-gradient-to-r from-blue-900/80 to-indigo-900/80 p-5 flex flex-col justify-end">
+            <span class="absolute top-4 right-4 bg-red-600 text-[9px] font-bold px-2 py-0.5 rounded-full text-white uppercase tracking-wider animate-pulse">LIVE EXAMS</span>
+            <span class="text-blue-400 text-xs uppercase font-extrabold tracking-widest font-poppins">Premium Batches</span>
+            <h3 class="text-lg font-bold font-poppins text-white leading-tight">All Teaching Prep Exam Courses</h3>
+            <p class="text-xs text-slate-300 mt-1">₹199 only with unlimited recorded classes & notes!</p>
+          </div>
+          <!-- Slide 2 -->
+          <div class="w-full flex-shrink-0 relative h-full bg-gradient-to-r from-green-900/80 to-emerald-900/80 p-5 flex flex-col justify-end">
+            <span class="absolute top-4 right-4 bg-emerald-600 text-[9px] font-bold px-2 py-0.5 rounded-full text-white uppercase tracking-widest">TOPPED RESULT</span>
+            <span class="text-emerald-300 text-xs uppercase font-extrabold tracking-widest font-poppins">CTET & UPTET</span>
+            <h3 class="text-lg font-bold font-poppins text-white leading-tight">Mock Quizzes and Notes Included</h3>
+            <p class="text-xs text-slate-300 mt-1">Get certified upon completing exam criteria!</p>
+          </div>
+        </div>
+        <!-- Dot Nav -->
+        <div class="absolute bottom-3 right-4 flex gap-1 z-10">
+          <button onclick="slideHero(0)" class="w-2 h-2 rounded-full bg-white bg-opacity-90 cursor-pointer slider-dot"></button>
+          <button onclick="slideHero(1)" class="w-2 h-2 rounded-full bg-white bg-opacity-40 cursor-pointer slider-dot"></button>
+        </div>
+      </div>
+
+      <!-- TARGET EXAMS PANEL (Quick Badges) -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-blue-400">Exam Targets</h3>
+          <span class="text-[10px] text-slate-500 select-none">Active preparations</span>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <!-- Dynamic exam filter list -->
+          <button onclick="filterGroup('ALL')" class="exam-filter-btn px-3 py-1 rounded-full text-xs font-semibold bg-blue-600 text-white shadow-md border border-white/5 transition">All Exams</button>
+          <button onclick="filterGroup('CTET')" class="exam-filter-btn px-3 py-1 rounded-full text-xs font-semibold bg-white/[0.04] border border-white/5 text-slate-300 hover:bg-white/10 transition">CTET Prep</button>
+          <button onclick="filterGroup('KVS')" class="exam-filter-btn px-3 py-1 rounded-full text-xs font-semibold bg-white/[0.04] border border-white/5 text-slate-300 hover:bg-white/10 transition">KVS Exams</button>
+          <button onclick="filterGroup('DSSSB')" class="exam-filter-btn px-3 py-1 rounded-full text-xs font-semibold bg-white/[0.04] border border-white/5 text-slate-300 hover:bg-white/10 transition">DSSSB</button>
+          <button onclick="filterGroup('TET')" class="exam-filter-btn px-3 py-1 rounded-full text-xs font-semibold bg-white/[0.04] border border-white/5 text-slate-300 hover:bg-white/10 transition">State TET</button>
+        </div>
+      </div>
+
+      <!-- TODAY'S LIVE PANEL -->
+      <div class="glass-card rounded-2xl p-4 border border-blue-500/10 space-y-3 bg-gradient-to-tr from-brand-dark/95 to-slate-900/90">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs uppercase font-black text-red-500 tracking-wider flex items-center gap-1.5 animate-pulse">
+            <i class="fa-solid fa-circle text-[8px]"></i> Synchronized Live Session
+          </h3>
+          <span class="text-[10px] bg-red-600 text-white font-extrabold px-1.5 py-0.5 rounded-md">Live Stream</span>
+        </div>
+        <div id="live-classes-strip" class="space-y-3">
+          <!-- Dynamic Live countdown block or Join Block -->
+          <p class="text-xs text-slate-400">Loading scheduled digital streaming sessions...</p>
+        </div>
+      </div>
+
+      <!-- POPULAR PREP COURSES Grid -->
+      <div class="space-y-3">
+        <h3 class="font-poppins font-bold text-base text-white flex items-center justify-between">
+          <span>Popular Courses</span>
+          <span class="text-xs font-semibold text-blue-400 hover:underline cursor-pointer" onclick="setActiveTab('store')">View Complete Store</span>
+        </h3>
+        <div id="popular-courses-grid" class="grid grid-cols-1 gap-4">
+          <!-- Dynamic Course list -->
+        </div>
+      </div>
+
+      <!-- MOCK EXAM NEWS UPDATES -->
+      <div class="glass-card rounded-2xl p-4 space-y-2">
+        <h3 class="text-xs uppercase font-extrabold tracking-widest text-blue-400"><i class="fa-solid fa-bullhorn text-xs mr-1"></i> Exam Bulletins</h3>
+        <ul class="text-xs space-y-2 text-slate-300">
+          <li class="flex gap-2 items-start"><i class="fa-solid fa-arrow-right-long text-blue-500 mt-1"></i> CTET July Registration starts soon. Secure mock updates.</li>
+          <li class="flex gap-2 items-start"><i class="fa-solid fa-arrow-right-long text-blue-500 mt-1"></i> KVS PRT Teacher Cutoff list updated. Access resources.</li>
+        </ul>
+      </div>
+
+      <!-- TOPPERS HALL -->
+      <div class="space-y-3">
+        <h3 class="text-xs uppercase font-extrabold tracking-wider text-blue-400"><i class="fa-solid fa-crown text-yellow-500 mr-1.5"></i> Elite Exam Achievers</h3>
+        <div id="toppers-carousel" class="flex gap-4 overflow-x-auto pb-2 fancy-scrollbar">
+          <!-- Dynamic Toppers scroll list -->
+        </div>
+      </div>
+
+      <!-- TESTIMONIALS SLIDER -->
+      <div id="testimonials-block" class="glass-card rounded-2xl p-4 bg-gradient-to-r from-blue-900/20 to-indigo-900/20 p-5 relative overflow-hidden">
+        <i class="fa-solid fa-quote-left absolute top-3 right-4 text-3xl text-blue-500/10"></i>
+        <div id="testimonial-slot" class="text-xs italic text-slate-300">
+          "Loading valuable testimonials from our premium teaching platform candidates..."
+        </div>
+      </div>
+    </section>
+
+    <!-- EXAMS STORE VIEW -->
+    <section id="store-view" class="hidden space-y-6">
+      <div class="space-y-2">
+        <h2 class="font-poppins font-bold text-xl text-white">Course Store</h2>
+        <p class="text-xs text-slate-400">All comprehensive teaching preparations standard priced at ₹199 with 365 days of full validity.</p>
+      </div>
+      <div id="store-courses-grid" class="grid grid-cols-1 gap-4">
+        <!-- Dynamic Complete course cards -->
+      </div>
+    </section>
+
+    <!-- DETAILED COURSE SYLLABUS HUB -->
+    <section id="course-hub-view" class="hidden space-y-6">
+      <button onclick="setActiveTab('store')" class="text-xs text-blue-400 flex items-center gap-1.5 hover:underline bg-white/5 py-1.5 px-3 rounded-lg"><i class="fa-solid fa-chevron-left"></i> Back to Store</button>
+      
+      <div class="glass-card rounded-2xl overflow-hidden shadow-lg border border-white/5">
+        <img id="hub-course-thumbnail" src="https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&q=80&w=600" class="w-full h-36 object-cover" alt="Course Image">
+        <div class="p-5 space-y-3">
+          <div class="flex items-center justify-between">
+            <span id="hub-course-teacher" class="text-xs font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md">By Roli Pandey</span>
+            <span id="hub-course-validity" class="text-[10px] text-slate-400 uppercase font-mono tracking-wider"><i class="fa-solid fa-calendar"></i> 365 Days</span>
+          </div>
+          <h2 id="hub-course-title" class="font-poppins font-bold text-lg text-white">CTET Paper 1 Preparation Batch</h2>
+          <p id="hub-course-description" class="text-xs text-slate-300">Detailed overview of core syllabus indicators.</p>
+          <div class="flex items-center justify-between pt-3 border-t border-white/5">
+            <div class="text-sm font-bold text-white uppercase font-mono tracking-tight text-xl">₹199 <span class="text-xs text-slate-400 font-normal line-through">₹2499</span></div>
+            <button id="hub-buy-button" onclick="" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 transition rounded-xl text-xs font-poppins font-bold">Unblock with PayU</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Syllabus Topics and Contents (Preview only or active based on purchase parameter) -->
+      <div class="space-y-4">
+        <h3 class="font-poppins text-sm font-extrabold text-white">Syllabus Overview</h3>
+        <div id="hub-syllabus-accordion" class="space-y-3">
+          <!-- Dynamic Subjects & Lectures listings -->
+        </div>
+      </div>
+    </section>
+
+    <!-- CHANNELS: DOUTS HUB SECTION -->
+    <section id="doubts-view" class="hidden space-y-4">
+      <div class="space-y-1">
+        <h2 class="font-poppins font-bold text-xl text-white">Instant Doubts Hub</h2>
+        <p class="text-xs text-slate-400">Ask doubts. Expert Educator <b>Roli Pandey</b> will reply in real-time.</p>
+      </div>
+
+      <!-- Send Doubt Form -->
+      <div class="glass-card rounded-2xl p-4 bg-gradient-to-tr from-[#1d4ed8]/10 to-slate-900/80">
+        <label class="block text-xs font-bold text-blue-400 mb-2 uppercase tracking-wide">Write your technical/subject doubt here</label>
+        <div class="flex gap-2">
+          <input type="text" id="doubt-query-input" placeholder="Type detail query for exams..." class="flex-grow text-xs text-white px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 focus:outline-none focus:border-blue-500">
+          <button onclick="submitDoubt()" class="bg-blue-600 hover:bg-blue-700 h-10 w-10 flex items-center justify-center rounded-xl text-white transition active:scale-95"><i class="fa-solid fa-paper-plane text-sm"></i></button>
+        </div>
+      </div>
+
+      <!-- Doubts Stream -->
+      <div class="space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-blue-400">Doubt List</h3>
+        <div id="doubts-list-stream" class="space-y-3">
+          <!-- Dynamic query updates -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ACTIVE MOCK TEST & QUIZ CONTAINER -->
+    <section id="quiz-attempt-view" class="hidden space-y-6">
+      <div class="flex items-center justify-between border-b border-white/5 pb-3">
+        <div>
+          <h3 id="quiz-title" class="font-poppins font-bold text-sm text-white">Daily Chapter Quiz</h3>
+          <span id="quiz-meta" class="text-[10px] text-slate-400">Section: CTET Pedagogy</span>
+        </div>
+        <div class="flex items-center gap-1 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20 text-blue-400 font-semibold font-mono text-xs">
+          <i class="fa-solid fa-hourglass-half"></i> <span id="quiz-timer">120s</span>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-5 space-y-5">
+        <div class="flex justify-between text-xs font-bold text-blue-400">
+          <span id="quiz-q-num">Question 1 of 5</span>
+          <span id="quiz-weight">Marks: +2 / -0</span>
+        </div>
+        <p id="quiz-q-text" class="text-sm font-semibold text-slate-100">Click below to start mock analysis assessments and answer correct items.</p>
+        
+        <!-- Options List -->
+        <div id="quiz-options-container" class="space-y-3">
+          <!-- Option elements loaded dynamically -->
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center gap-2">
+        <button onclick="abortQuizAttempt()" class="text-xs font-bold text-red-400 bg-red-500/5 px-4 py-2.5 rounded-xl border border-red-500/10 hover:bg-red-500/10 transition">Quit Test</button>
+        <button id="quiz-next-btn" onclick="submitActiveAnswer()" class="text-xs font-bold text-white bg-blue-600 px-6 py-2.5 rounded-xl hover:bg-blue-700 transition shadow-md flex items-center gap-1.5">Save & Next <i class="fa-solid fa-angle-right"></i></button>
+      </div>
+    </section>
+
+    <!-- TEST ANALYSIS RESULT PORTAL -->
+    <section id="quiz-result-view" class="hidden space-y-6 text-center">
+      <div class="glass-card rounded-2xl p-6 bg-gradient-to-tr from-blue-900/20 to-slate-900/90 space-y-5 border border-white/5">
+        <div class="w-16 h-16 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center mx-auto text-2xl">
+          <i class="fa-solid fa-clipboard-check"></i>
+        </div>
+        <div class="space-y-1">
+          <h2 class="font-poppins font-bold text-lg text-white">Mock Test Assessment Report</h2>
+          <p id="result-status" class="text-xs text-green-400 font-semibold leading-relaxed">Evaluation Process Completed Satisactorily!</p>
+        </div>
+
+        <!-- Metric Grid -->
+        <div class="grid grid-cols-2 gap-3 pt-3">
+          <div class="bg-white/[0.02] border border-white/5 p-3 rounded-xl text-center">
+            <span class="block text-[10px] text-slate-400">Marks Scored</span>
+            <span id="result-marks" class="text-lg font-bold text-white font-mono">08/10</span>
+          </div>
+          <div class="bg-white/[0.02] border border-white/5 p-3 rounded-xl text-center">
+            <span class="block text-[10px] text-slate-400">Percentage</span>
+            <span id="result-pct" class="text-lg font-bold text-blue-400 font-mono">80.0%</span>
+          </div>
+          <div class="bg-white/[0.02] border border-white/5 p-3 rounded-xl text-center">
+            <span class="block text-[10px] text-slate-400">Platform Rank</span>
+            <span id="result-rank" class="text-lg font-bold text-white font-mono">#4</span>
+          </div>
+          <div class="bg-white/[0.02] border border-white/5 p-3 rounded-xl text-center">
+            <span class="block text-[10px] text-slate-400">Total Accuracy</span>
+            <span id="result-accuracy" class="text-lg font-bold text-green-400 font-mono">82%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Solutions Accordion -->
+      <div class="space-y-3 text-left">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-blue-400">Solutions Summary</h3>
+        <div id="solution-feed-outer" class="space-y-3">
+          <!-- Solution explanation items -->
+        </div>
+      </div>
+
+      <button onclick="setActiveTab('store')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-sm font-bold rounded-xl transition">Return to Store</button>
+    </section>
+
+    <!-- SUBSCRIBED COMPREHENSIVE COURSE VIEWROOM -->
+    <section id="mycourses-view" class="hidden space-y-6">
+      <div class="space-y-1">
+        <h2 class="font-poppins font-bold text-xl text-white">Your Purchased Preparations</h2>
+        <p class="text-xs text-slate-400">Select any purchased syllabus batch to unlock virtual classrooms, live video streaming, and verified certificates.</p>
+      </div>
+
+      <div id="subscribed-list-container" class="space-y-4">
+        <!-- Purchased interactive folders -->
+      </div>
+    </section>
+
+    <!-- CLASS SYLLABUS DIRECTORY ROOM -->
+    <section id="folder-classroom-view" class="hidden space-y-6">
+      <button onclick="showUnblockedCourseList()" class="text-xs text-blue-400 flex items-center gap-1 bg-white/5 py-1 px-2.5 rounded-lg"><i class="fa-solid fa-chevron-left"></i> Back to Subscribed List</button>
+      
+      <div class="space-y-1">
+        <h3 id="class-course-title" class="font-poppins font-bold text-base text-white">Live Classroom Portal</h3>
+        <p id="class-course-meta" class="text-[10px] text-slate-400">Track milestones and download course completion documents.</p>
+      </div>
+
+      <!-- Class Tracker Indicator -->
+      <div class="glass-card rounded-2xl p-4 flex items-center justify-between">
+        <div>
+          <span class="text-[10px] text-slate-400 block uppercase font-bold">Preparation Milestones</span>
+          <span id="class-progress-pct" class="text-base font-bold text-blue-400 font-mono">0% Completed</span>
+        </div>
+        <div class="w-1/2 bg-white/10 h-2 rounded-full overflow-hidden">
+          <div id="class-progress-bar" class="bg-blue-600 h-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Classroom Resource Navigation Tabs -->
+      <div class="flex border-b border-white/5 pb-2 scroll-tabs gap-2 overflow-x-auto fancy-scrollbar select-none">
+        <button onclick="toggleRoomTab('lectures-panel')" class="room-nav-btn text-xs font-bold shrink-0 px-3.5 py-1.5 rounded-full bg-blue-600 text-white shadow">Recorded</button>
+        <button onclick="toggleRoomTab('live-panel')" class="room-nav-btn text-xs font-bold shrink-0 px-3.5 py-1.5 rounded-full bg-white/[0.04] text-slate-300">Live Logs</button>
+        <button onclick="toggleRoomTab('notes-panel')" class="room-nav-btn text-xs font-bold shrink-0 px-3.5 py-1.5 rounded-full bg-white/[0.04] text-slate-300">PDF Library</button>
+        <button onclick="toggleRoomTab('practice-panel')" class="room-nav-btn text-xs font-bold shrink-0 px-3.5 py-1.5 rounded-full bg-white/[0.04] text-slate-300">Test Series</button>
+      </div>
+
+      <!-- Tab Content Area -->
+      <div class="space-y-4">
+        
+        <!-- Tab 1: Recorded Lectures panel -->
+        <div id="lectures-panel" class="room-tab-content space-y-4">
+          <!-- Syllabus Subject Tree -->
+          <div id="folder-subject-accordion" class="space-y-3">
+            <p class="text-xs text-slate-400">Select standard topics below to browse chapters and lectures.</p>
+          </div>
+        </div>
+
+        <!-- Tab 2: Live Streams logs inside folder -->
+        <div id="live-panel" class="room-tab-content hidden space-y-3">
+          <div class="space-y-3" id="class-live-list">
+            <p class="text-xs text-slate-400">Loading active stream records...</p>
+          </div>
+        </div>
+
+        <!-- Tab 3: PDF Notes List -->
+        <div id="notes-panel" class="room-tab-content hidden space-y-4">
+          <div class="flex gap-2">
+            <input type="text" id="pdf-search-query" onkeyup="searchClassPdfs()" placeholder="Search PDF files by title..." class="flex-grow text-xs text-white px-3 py-2 bg-white/[0.03] border border-white/10 rounded-xl focus:outline-none">
+            <span class="bg-white/5 w-10 h-10 flex items-center justify-center rounded-xl border border-white/10"><i class="fa-solid fa-magnifying-glass text-slate-400"></i></span>
+          </div>
+          <div id="pdf-directory" class="space-y-3">
+            <!-- Dynamic PDF listings -->
+          </div>
+        </div>
+
+        <!-- Tab 4: Practice mock exams (chapter quiz, daily mock) -->
+        <div id="practice-panel" class="room-tab-content hidden space-y-3">
+          <div id="practice-tests-list" class="space-y-3">
+            <!-- Dynamic Tests -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIDEO INTEGRATION OVERLAY POPUP -->
+    <section id="videoplayer-view" class="hidden space-y-4">
+      <button onclick="closeVideoLecture()" class="text-xs text-blue-400 flex items-center gap-1.5 bg-white/5 py-1.5 px-3 rounded-lg"><i class="fa-solid fa-chevron-left"></i> Close Player Hub</button>
+      <div class="glass-card rounded-2xl overflow-hidden aspect-video border border-blue-500/20 shadow-xl">
+        <iframe id="youtube-iframe" class="w-full h-full" src="" title="Video Player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      </div>
+      <div>
+        <h4 id="video-lecture-title" class="font-poppins font-bold text-base text-white">Lecture Title</h4>
+        <p id="video-lecture-meta" class="text-[10px] text-blue-400 uppercase font-mono tracking-wider mt-1">Status: Active Classroom Activity</p>
+      </div>
+    </section>
+
+    <!-- EXTENDED PROFILE AND REFERRALS DECK -->
+    <section id="profile-view" class="hidden space-y-6">
+      
+      <!-- Student Profile Card -->
+      <div class="glass-card rounded-2xl p-5 space-y-4 relative overflow-hidden bg-gradient-to-tr from-slate-900 via-slate-900 to-[#1d4ed8]/20">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-lg text-white font-black uppercase font-poppins shadow" id="profile-initial-badge">E</div>
+          <div>
+            <h3 id="profile-name" class="font-poppins font-bold text-base text-white">Active Student</h3>
+            <span id="profile-email" class="text-xs text-slate-400 font-mono block">student@gmail.com</span>
+          </div>
+        </div>
+        <button onclick="logout()" class="text-xs font-bold text-red-400 hover:underline"><i class="fa-solid fa-sign-out-alt"></i> Safe Logout</button>
+      </div>
+
+      <!-- CERTIFICATE SYSTEM CONTAINER -->
+      <div class="glass-card rounded-2xl p-5 space-y-3 border border-yellow-500/10">
+        <h3 class="text-xs uppercase font-extrabold tracking-widest text-yellow-500 flex items-center gap-1.5">
+          <i class="fa-solid fa-medal"></i> Dynamic Completion Certificates
+        </h3>
+        <p class="text-[11px] text-slate-400 leading-normal">Your personalized diploma generates instantly upon completing 100% of any unblocked course preparation milestones.</p>
+        <div id="unlocked-certificates" class="space-y-3">
+          <!-- Dyn certificate list downloads -->
+        </div>
+      </div>
+
+      <!-- REFERRAL SYSTEM WALLET -->
+      <div class="glass-card rounded-2xl p-5 space-y-4 border border-blue-500/10 bg-gradient-to-tr from-brand-dark to-slate-900">
+        <h3 class="text-xs uppercase font-extrabold tracking-widest text-blue-400 flex items-center gap-1.5">
+          <i class="fa-solid fa-gift"></i> Referral Program (Earn ₹50 Cash)
+        </h3>
+        <p class="text-[11px] text-slate-400">Share your custom program link. When candidate purchases a course target of ₹199, they unlock ₹50 wallet credits instantly!</p>
+        
+        <!-- Copy Area -->
+        <div class="bg-white/5 border border-white/10 p-3.5 rounded-xl flex items-center justify-between">
+          <div>
+            <span class="block text-[9px] text-slate-500 uppercase font-black tracking-wide">Referral Code</span>
+            <span id="my-referral-code" class="text-base font-extrabold text-blue-400 font-mono select-all">REF539</span>
+          </div>
+          <button onclick="copyReferralCode()" class="text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 px-3.5 py-2 rounded-xl transition active:scale-95 text-xs"><i class="fa-solid fa-copy mr-1"></i> Copy Code</button>
+        </div>
+
+        <!-- Referral Stats -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-white/[0.02] border border-white/5 p-3 rounded-xl text-center">
+            <span class="block text-[10px] text-slate-400 mb-0.5">Friends Referred</span>
+            <span id="referred-count" class="text-lg font-bold text-white font-mono">0 Candidates</span>
+          </div>
+          <div class="bg-white/[0.02] border border-white/5 p-3 rounded-xl text-center">
+            <span class="block text-[10px] text-slate-400 mb-0.5">Referral Earnings</span>
+            <span id="referral-earnings-val" class="text-lg font-bold text-green-400 font-mono">₹0.00</span>
+          </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="space-y-2 pt-2">
+          <span class="block text-[10px] text-slate-400 uppercase font-bold tracking-wide">Referrals Leaderboard</span>
+          <div id="referrals-leaderboard" class="space-y-1 bg-white/[0.02] p-2 rounded-xl text-[11px] max-h-32 overflow-y-auto">
+            <!-- Dynamic listings -->
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORIC TRANSACTIONS LEDGER -->
+      <div class="space-y-3">
+        <h3 class="text-xs uppercase font-extrabold tracking-wider text-blue-400">Purchase Invoices</h3>
+        <div class="glass-card rounded-2xl overflow-hidden text-xs">
+          <div class="p-4 border-b border-white/5 font-semibold text-slate-400 uppercase tracking-widest text-[10px]">Payment Ledger History</div>
+          <div id="profile-invoices-list" class="divide-y divide-white/5 max-h-48 overflow-y-auto fancy-scrollbar">
+            <p class="p-4 text-[11px] text-slate-400">No transactions recorded for this account credentials yet.</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- BOTTOM CLASSIFIED ROUTE NAVIGATOR BAR -->
+  <nav id="bottom-navigation-bar" class="fixed bottom-0 left-0 right-0 z-40 max-w-md mx-auto h-[68px] bg-brand-dark/95 backdrop-blur-md border-t border-white/5 grid grid-cols-5 items-center justify-center py-1">
+    <button onclick="setActiveTab('home')" class="flex flex-col items-center justify-center text-blue-500 font-bold gap-1 nav-button-tab" id="nav-btn-home">
+      <i class="fa-solid fa-house text-lg"></i>
+      <span class="text-[9px] uppercase tracking-wide">Home</span>
+    </button>
+    <button onclick="setActiveTab('store')" class="flex flex-col items-center justify-center text-slate-400 hover:text-blue-400 gap-1 nav-button-tab" id="nav-btn-store">
+      <i class="fa-solid fa-store text-lg"></i>
+      <span class="text-[9px] uppercase tracking-wide">Store</span>
+    </button>
+    <button onclick="setActiveTab('mycourses')" class="flex flex-col items-center justify-center text-slate-400 hover:text-blue-400 gap-1 nav-button-tab" id="nav-btn-mycourses">
+      <i class="fa-solid fa-book-open text-lg"></i>
+      <span class="text-[9px] uppercase tracking-wide">My Prep</span>
+    </button>
+    <button onclick="setActiveTab('doubts')" class="flex flex-col items-center justify-center text-slate-400 hover:text-blue-400 gap-1 nav-button-tab" id="nav-btn-doubts">
+      <i class="fa-solid fa-circle-question text-lg"></i>
+      <span class="text-[9px] uppercase tracking-wide">Doubts</span>
+    </button>
+    <button onclick="setActiveTab('profile')" class="flex flex-col items-center justify-center text-slate-400 hover:text-blue-400 gap-1 nav-button-tab" id="nav-btn-profile">
+      <i class="fa-solid fa-user-circle text-lg"></i>
+      <span class="text-[9px] uppercase tracking-wide">Profile</span>
+    </button>
+  </nav>
+
+  <!-- FLOATING FLOATING SUPPORT CHANNELS -->
+  <a href="https://wa.me/919415022707?text=Hello%20Ed%20Achievers%2C%20I%20have%20a%20query%20regarding%20preparatory%2520courses." target="_blank" class="fixed right-4 bottom-20 z-50 w-12 h-12 bg-green-500 hover:bg-green-600 active:scale-95 transition rounded-full flex items-center justify-center text-white text-2xl shadow-lg neon-glow shadow-green-500/20" title="Contact WhatsApp Support">
+    <i class="fa-brands fa-whatsapp"></i>
+  </a>
+
+  <!-- HIDDEN CHECKOUT DUMMY / REAL PAYU FORM POSTER -->
+  <form id="payu-submit-form" action="https://sandboxsecure.payu.in/_payment" method="POST" class="hidden">
+    <input type="hidden" name="key" value="ndYBUT">
+    <input type="hidden" name="txnid" id="form-txnid">
+    <input type="hidden" name="amount" id="form-amount">
+    <input type="hidden" name="productinfo" id="form-productinfo">
+    <input type="hidden" name="firstname" id="form-firstname">
+    <input type="hidden" name="email" id="form-email">
+    <input type="hidden" name="phone" id="form-phone">
+    <input type="hidden" name="surl" id="form-surl">
+    <input type="hidden" name="furl" id="form-furl">
+    <input type="hidden" name="hash" id="form-hash">
+    <input type="hidden" name="udf1" id="form-udf1">
+  </form>
+
+  <!-- CANVAS FOR DYNAMIC HIGH-RES CERTIFICATE DRAWING (Off-screen) -->
+  <canvas id="certificate-canvas" class="hidden" width="1000" height="700"></canvas>
+
+  <!-- MAIN SCRIPT CONTROLLER -->
+  <script>
+    // 1. FIREBASE CONFIGURATION & INITIALIZATION
+    const firebaseConfig = {
+      apiKey: "AIzaSyAmr4fNTo4Y0POcpTNVBu-q53fk3qp9Wc4",
+      authDomain: "ed-achievers-78a7a.firebaseapp.com",
+      databaseURL: "https://ed-achievers-78a7a-default-rtdb.firebaseio.com",
+      projectId: "ed-achievers-78a7a",
+      storageBucket: "ed-achievers-78a7a.firebasestorage.app",
+      messagingSenderId: "847148437866",
+      appId: "1:847148437866:web:2fb7af2e6fba034cd91513",
+      measurementId: "G-J9M6DTJT7Q"
+    };
+
+    // LOCAL SANDBOX REALTIME DATABASE FALLBACK EMULATOR FOR ROBUSTNESS
+    class FallbackFirebaseDB {
+      constructor() {
+        this.storageKey = 'ed_achievers_local_db';
+        if (!localStorage.getItem(this.storageKey)) {
+          const initialSeed = {
+            courses: {
+              "CRS-seed-ctet1": {
+                name: "CTET Paper 1 (Complete Prep)",
+                teacher: "Roli Pandey",
+                validity: 365,
+                price: 199,
+                description: "High-yield video lectures, child pedagogy guides, master mock series designed to clear secondary parameters on first attempt.",
+                thumbnail: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&q=80&w=600"
+              },
+              "CRS-seed-ctet2": {
+                name: "CTET Paper 2 (Science & Math)",
+                teacher: "Roli Pandey",
+                validity: 365,
+                price: 199,
+                description: "Step-by-step math and cognitive science conceptual analysis. Full syllabus coverage with direct reference notes.",
+                thumbnail: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80&w=600"
+              }
+            },
+            subjects: {
+              "CRS-seed-ctet1": {
+                "SUB-seed-1": { name: "Child Development & Pedagogy" }
+              }
+            },
+            chapters: {
+              "CRS-seed-ctet1": {
+                "SUB-seed-1": {
+                  "CHAP-seed-1": { name: "Piaget & Vygotsky Theories" }
+                }
+              }
+            },
+            lectures: {
+              "CRS-seed-ctet1": {
+                "SUB-seed-1": {
+                  "CHAP-seed-1": {
+                    "LEC-seed-1": {
+                      title: "Constructivism & Social Development Lecture",
+                      youtubeUrl: "https://www.youtube.com/watch?v=yY-S5XAGm1g",
+                      duration: "45 Mins"
+                    }
+                  }
+                }
+              }
+            },
+            tests: {
+              "TST-seed-1": {
+                title: "Pedagogy Fundamental Quiz 01",
+                subject: "Pedagogy",
+                durationMinutes: 5,
+                totalMarks: 10
+              }
+            },
+            questions: {
+              "TST-seed-1": {
+                "Q-seed-1": {
+                  text: "Which of the following describes Lev Vygotsky's Zone of Proximal Development?",
+                  options: [
+                    "The range of tasks that a child can complete independently.",
+                    "The range of tasks that are too difficult for a child to master alone but can be learned with guidance.",
+                    "The level of cognitive development a child achieves through physical play.",
+                    "A strict state of cognitive disequilibrium."
+                  ],
+                  answer: 1,
+                  explanation: "Vygotsky's Zone of Proximal Development (ZPD) represents the gap between absolute independent capability and assisted capacity under pedagogical scaffolds."
+                },
+                "Q-seed-2": {
+                  text: "According to Jean Piaget, during which stage do children develop object permanence?",
+                  options: [
+                    "Sensorimotor Stage",
+                    "Preoperational Stage",
+                    "Concrete Operational Stage",
+                    "Formal Operational Stage"
+                  ],
+                  answer: 0,
+                  explanation: "Object permanence emerges during the sensorimotor stage (birth to ~2 years) as toddlers realize objects continue to exist even when out of view."
+                }
+              }
+            },
+            liveClasses: {},
+            pdfs: {
+              "PDF-seed-1": {
+                title: "Child Pedagogy Master Notes (Revision)",
+                subject: "Pedagogy",
+                url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+                uploadedAt: new Date().toISOString()
+              }
+            },
+            toppers: {},
+            testimonials: {},
+            banners: {}
+          };
+          localStorage.setItem(this.storageKey, JSON.stringify(initialSeed));
+        }
+      }
+
+      _getData() {
+        return JSON.parse(localStorage.getItem(this.storageKey) || '{}');
+      }
+
+      _setData(data) {
+        localStorage.setItem(this.storageKey, JSON.stringify(data));
+        if (this.listeners) {
+          for (let path in this.listeners) {
+            this.listeners[path].forEach(cb => {
+              cb(new FallbackSnapshot(this._getNestedValue(data, path)));
+            });
+          }
+        }
+      }
+
+      _getNestedValue(obj, path) {
+        if (!path || path === '/') return obj;
+        const parts = path.split('/').filter(Boolean);
+        let curr = obj;
+        for (let part of parts) {
+          if (curr && typeof curr === 'object') {
+            curr = curr[part];
+          } else {
+            return undefined;
+          }
+        }
+        return curr === undefined ? null : curr;
+      }
+
+      _setNestedValue(obj, path, val) {
+        const parts = path.split('/').filter(Boolean);
+        let curr = obj;
+        for (let i = 0; i < parts.length - 1; i++) {
+          const part = parts[i];
+          if (!curr[part] || typeof curr[part] !== 'object') {
+            curr[part] = {};
+          }
+          curr = curr[part];
+        }
+        const lastPart = parts[parts.length - 1];
+        if (lastPart) {
+          curr[lastPart] = val;
+        } else {
+          Object.assign(obj, val);
+        }
+      }
+
+      ref(path) {
+        return new FallbackRef(this, path);
+      }
+    }
+
+    class FallbackRef {
+      constructor(db, path) {
+        this.db = db;
+        this.path = path || '';
+      }
+
+      child(subPath) {
+        return new FallbackRef(this.db, `${this.path}/${subPath}`);
+      }
+
+      once(event, callback) {
+        const data = this.db._getData();
+        const val = this.db._getNestedValue(data, this.path);
+        const snap = new FallbackSnapshot(val);
+        if (callback) {
+          callback(snap);
+          return Promise.resolve(snap);
+        }
+        return Promise.resolve(snap);
+      }
+
+      on(event, callback) {
+        if (!this.db.listeners) this.db.listeners = {};
+        if (!this.db.listeners[this.path]) this.db.listeners[this.path] = [];
+        this.db.listeners[this.path].push(callback);
+        
+        const data = this.db._getData();
+        const val = this.db._getNestedValue(data, this.path);
+        callback(new FallbackSnapshot(val));
+        return callback;
+      }
+
+      off(event, callback) {
+        if (this.db.listeners && this.db.listeners[this.path]) {
+          if (callback) {
+            this.db.listeners[this.path] = this.db.listeners[this.path].filter(cb => cb !== callback);
+          } else {
+            delete this.db.listeners[this.path];
+          }
+        }
+      }
+
+      set(val) {
+        const data = this.db._getData();
+        this.db._setNestedValue(data, this.path, val);
+        this.db._setData(data);
+        return Promise.resolve();
+      }
+
+      push(val) {
+        const key = 'PUSH_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+        const newRef = new FallbackRef(this.db, `${this.path}/${key}`);
+        if (val !== undefined) {
+          newRef.set(val);
+        }
+        return newRef;
+      }
+
+      update(val) {
+        const data = this.db._getData();
+        const curr = this.db._getNestedValue(data, this.path) || {};
+        if (curr && typeof curr === 'object') {
+          Object.assign(curr, val);
+          this.db._setNestedValue(data, this.path, curr);
+          this.db._setData(data);
+        } else {
+          this.set(val);
+        }
+        return Promise.resolve();
+      }
+
+      remove() {
+        const parts = this.path.split('/').filter(Boolean);
+        if (parts.length === 0) {
+          this.db._setData({});
+          return Promise.resolve();
+        }
+        const data = this.db._getData();
+        let curr = data;
+        for (let i = 0; i < parts.length - 1; i++) {
+          curr = curr[parts[i]];
+        }
+        if (curr && parts[parts.length - 1]) {
+          delete curr[parts[parts.length - 1]];
+        }
+        this.db._setData(data);
+        return Promise.resolve();
+      }
+
+      orderByChild(prop) {
+        this.orderProp = prop;
+        return this;
+      }
+
+      equalTo(targetVal) {
+        this.equalVal = targetVal;
+        return this;
+      }
+
+      limitToFirst(limit) {
+        this.limitCount = limit;
+        return this;
+      }
+    }
+
+    class FallbackSnapshot {
+      constructor(val) {
+        this._val = val;
+      }
+
+      val() {
+        return this._val;
+      }
+
+      exists() {
+        return this._val !== null && this._val !== undefined;
+      }
+    }
+
+    class FallbackAuth {
+      constructor() {
+        this._user = JSON.parse(localStorage.getItem('ed_achievers_user') || 'null');
+        this.authStateListeners = [];
+      }
+
+      get currentUser() {
+        return this._user;
+      }
+
+      onAuthStateChanged(callback) {
+        this.authStateListeners.push(callback);
+        // Call immediately with existing state
+        setTimeout(() => callback(this._user), 0);
+        return () => {
+          this.authStateListeners = this.authStateListeners.filter(cb => cb !== callback);
+        };
+      }
+
+      signInWithEmailAndPassword(email, password) {
+        const localUsers = JSON.parse(localStorage.getItem('ed_achievers_local_users') || '{}');
+        const u = localUsers[email.replace(/\./g, '_')];
+        if (u && u.password === password) {
+          this._user = { uid: u.uid, email: u.email, displayName: u.name };
+          localStorage.setItem('ed_achievers_user', JSON.stringify(this._user));
+          this.authStateListeners.forEach(cb => cb(this._user));
+          return Promise.resolve({ user: this._user });
+        }
+        return Promise.reject(new Error("Email or password mismatch. Please sign up first."));
+      }
+
+      createUserWithEmailAndPassword(email, password) {
+        const uid = 'USR-' + Date.now();
+        const newUser = { uid, email, displayName: email.split('@')[0] };
+        
+        const localUsers = JSON.parse(localStorage.getItem('ed_achievers_local_users') || '{}');
+        localUsers[email.replace(/\./g, '_')] = { uid, email, password, name: email.split('@')[0] };
+        localStorage.setItem('ed_achievers_local_users', JSON.stringify(localUsers));
+
+        this._user = newUser;
+        localStorage.setItem('ed_achievers_user', JSON.stringify(this._user));
+        this.authStateListeners.forEach(cb => cb(this._user));
+        return Promise.resolve({ user: this._user });
+      }
+
+      signOut() {
+        this._user = null;
+        localStorage.removeItem('ed_achievers_user');
+        this.authStateListeners.forEach(cb => cb(null));
+        return Promise.resolve();
+      }
+
+      sendPasswordResetEmail(email) {
+        return Promise.resolve();
+      }
+    }
+
+    // SAFE FIREBASE INITIALIZATION WRAPPER
+    let database;
+    let auth;
+    let isCloudDatabase = false;
+
+    if (typeof firebase !== 'undefined') {
+      try {
+        firebase.initializeApp(firebaseConfig);
+        database = firebase.database();
+        try {
+          auth = firebase.auth();
+        } catch (_) {}
+        isCloudDatabase = true;
+        console.log("Firebase services loaded successfully (Cloud Mode).");
+      } catch (e) {
+        console.warn("Firebase initialization failed. Activating Sandbox Emulator:", e);
+        bootstrapLocalEmulator();
+      }
+    } else {
+      console.warn("Firebase SDK scripts are unreachable. Activating Sandbox Emulator.");
+      bootstrapLocalEmulator();
+    }
+
+    function bootstrapLocalEmulator() {
+      database = new FallbackFirebaseDB();
+      auth = new FallbackAuth();
+      isCloudDatabase = false;
+    }
+
+    // Update synchronization status badge
+    window.addEventListener('DOMContentLoaded', () => {
+      const syncBadge = document.getElementById('sync-indicator');
+      if (syncBadge) {
+        if (isCloudDatabase) {
+          syncBadge.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-green-400"></i> Cloud Connected`;
+        } else {
+          syncBadge.innerHTML = `<i class="fa-solid fa-server text-blue-400"></i> Sandbox Offline Mode`;
+          syncBadge.title = "Unreachable Firebase. All administrative additions and updates are synchronized in your browser cache.";
+        }
+      }
+    });
+
+    // 2. STATE MANAGER VARIABLES
+    let currentUser = null;
+    let localUserData = null;
+    let availableCourses = {};
+    let purchasedCourses = {};
+    let currentFilteredGroup = 'ALL';
+    let activeCarouselSlide = 0;
+    
+    // Test Attempt State
+    let attemptTestId = null;
+    let testQuestions = [];
+    let currentQuestionIdx = 0;
+    let selectedOptionVal = null;
+    let testScoreCount = 0;
+    let testTimerInterval = null;
+    let testSecsRemaining = 120;
+    let testAnswersSummary = [];
+    
+    // Active classroom selection
+    let activeCourseNodeId = null;
+
+    // 3. SECURE AUTH & INITIAL SYSTEM CHECK
+    auth.onAuthStateChanged(user => {
+      document.getElementById('splash-view').classList.add('hidden');
+      if (user) {
+        currentUser = user;
+        document.getElementById('verified-badge').classList.remove('hidden');
+        
+        // Retrieve and sync Database Records for current User
+        database.ref('users/' + user.uid).on('value', snapshot => {
+          localUserData = snapshot.val();
+          if (!localUserData) {
+            // Register missing node record
+            localUserData = {
+              name: user.displayName || "Aspirant " + Math.floor(1000 + Math.random() * 9000),
+              email: user.email,
+              referralCode: "REF" + user.uid.substring(0, 6).toUpperCase(),
+              referredBy: "",
+              referralEarnings: 0,
+              joinedAt: new Date().toISOString()
+            };
+            database.ref('users/' + user.uid).set(localUserData);
+          }
+          syncUserInterfaces();
+        });
+        
+        // Sync Purchased Courses
+        database.ref('purchases/' + user.uid).on('value', snap => {
+          purchasedCourses = snap.val() || {};
+          syncMyCoursesPanel();
+        });
+
+        setActiveTab('home');
+      } else {
+        currentUser = null;
+        localUserData = null;
+        purchasedCourses = {};
+        document.getElementById('verified-badge').classList.add('hidden');
+        document.getElementById('header-user-name').innerText = "Login";
+        setActiveTab('auth');
+      }
+    });
+
+    // On-load verify URL triggers (Redirects from success or failure PayU routes)
+    window.addEventListener('load', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const paymentStatus = urlParams.get('paymentStatus');
+      const txnid = urlParams.get('txnid');
+      const courseId = urlParams.get('courseId');
+      const uid = urlParams.get('uid');
+      const amount = urlParams.get('amount') || "199";
+
+      if (paymentStatus === 'success' && courseId && uid) {
+        // Authenticate then write entry safely
+        alert("🎉 PayU Payment Successful! Activating your Ed Achievers Preparatory batch Course...");
+        
+        // Securely write entry inside Firebase Realtime Database
+        const purchaseRef = database.ref(`purchases/${uid}/${courseId}`);
+        const expiry = new Date();
+        expiry.setDate(expiry.getDate() + 365); // 365 validity
+
+        purchaseRef.set({
+          purchaseId: txnid || 'TXN-' + Date.now(),
+          paymentId: txnid || 'PAY-' + Date.now(),
+          courseId: courseId,
+          amount: parseFloat(amount),
+          status: 'success',
+          purchaseDate: new Date().toISOString(),
+          expiryDate: expiry.toISOString()
+        }).then(() => {
+          // Clear query parameters
+          window.history.replaceState({}, document.title, window.location.pathname);
+          location.reload();
+        });
+      } else if (paymentStatus === 'failure') {
+        alert("❌ PayU Checkout Failed. Please check authorization parameters or retry.");
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
+      // Initial Course Stream download
+      fetchCoursesFromDatabase();
+      loadUniversalToppers();
+      loadUniversalTestimonials();
+      startAutoCarousel();
+    });
+
+    // 4. TAB NAVIGATION CONTROLS
+    function setActiveTab(tabId) {
+      const tabs = ['auth', 'home', 'store', 'course-hub', 'mycourses', 'doubts', 'profile', 'quiz-attempt', 'quiz-result', 'folder-classroom', 'videoplayer'];
+      tabs.forEach(t => {
+        const elem = document.getElementById(t + '-view');
+        if (elem) elem.classList.add('hidden');
+      });
+
+      // Show requested view unless user is unauthenticated
+      if (!currentUser && tabId !== 'auth') {
+        document.getElementById('auth-view').classList.remove('remove');
+        document.getElementById('auth-view').classList.remove('hidden');
+        tabId = 'auth';
+      } else {
+        document.getElementById(tabId + '-view').classList.remove('hidden');
+      }
+
+      // Update Navigation Tab bar highlighting
+      const buttons = document.querySelectorAll('.nav-button-tab');
+      buttons.forEach(btn => {
+        btn.classList.add('text-slate-400');
+        btn.classList.remove('text-blue-500', 'font-bold');
+      });
+
+      const activeBtn = document.getElementById('nav-btn-' + tabId);
+      if (activeBtn) {
+        activeBtn.classList.add('text-blue-500', 'font-bold');
+        activeBtn.classList.remove('text-slate-400');
+      }
+    }
+
+    function toggleAuth(showLogin) {
+      if (showLogin) {
+        document.getElementById('login-container').classList.remove('hidden');
+        document.getElementById('register-container').classList.add('hidden');
+      } else {
+        document.getElementById('login-container').classList.add('hidden');
+        document.getElementById('register-container').classList.remove('hidden');
+      }
+    }
+
+    // 5. SIGN IN / ACCOUNT CREATION FLOWS
+    document.getElementById('login-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const pass = document.getElementById('login-password').value;
+      
+      auth.signInWithEmailAndPassword(email, pass)
+        .catch(err => alert("Identification Error: " + err.message));
+    });
+
+    document.getElementById('register-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const email = document.getElementById('reg-email').value;
+      const name = document.getElementById('reg-name').value;
+      const pass = document.getElementById('reg-password').value;
+      const referredBy = document.getElementById('reg-referred-by').value.trim().toUpperCase();
+
+      auth.createUserWithEmailAndPassword(email, pass)
+        .then(cred => {
+          cred.user.updateProfile({ displayName: name });
+          
+          // Construct User parameters matching rules
+          const uid = cred.user.uid;
+          const selfRef = "REF" + uid.substring(0, 6).toUpperCase();
+          
+          let initData = {
+            name: name,
+            email: email,
+            referralCode: selfRef,
+            referredBy: referredBy,
+            referralEarnings: referredBy ? 50 : 0,
+            joinedAt: new Date().toISOString()
+          };
+
+          database.ref('users/' + uid).set(initData).then(() => {
+            if (referredBy) {
+              // Update referring creator's nodes
+              database.ref('users').once('value', snapshot => {
+                const users = snapshot.val() || {};
+                for (let otherUid in users) {
+                  if (users[otherUid].referralCode === referredBy) {
+                    const currentEarnings = parseFloat(users[otherUid].referralEarnings || 0);
+                    database.ref(`users/${otherUid}/referralEarnings`).set(currentEarnings + 50);
+                    database.ref(`referrals/${otherUid}/referredUsers/${uid}`).set({
+                      name: name,
+                      joinedAt: new Date().toISOString()
+                    });
+                    break;
+                  }
+                }
+              });
+            }
+          });
+        })
+        .catch(err => alert("Registration failure indicators: " + err.message));
+    });
+
+    function forgotPassword() {
+      const email = prompt("Enter your registered Prep Email ID:");
+      if (email) {
+        auth.sendPasswordResetEmail(email)
+          .then(() => alert("Reset password secure parameters dispatched to your inbox."))
+          .catch(err => alert(err.message));
+      }
+    }
+
+    function logout() {
+      auth.signOut();
+    }
+
+    function syncUserInterfaces() {
+      if (localUserData) {
+        document.getElementById('header-user-name').innerText = localUserData.name.split(' ')[0];
+        document.getElementById('profile-name').innerText = localUserData.name;
+        document.getElementById('profile-email').innerText = localUserData.email;
+        document.getElementById('profile-initial-badge').innerText = localUserData.name.charAt(0).toUpperCase();
+        document.getElementById('my-referral-code').innerText = localUserData.referralCode;
+        document.getElementById('referral-earnings-val').innerText = "₹" + parseFloat(localUserData.referralEarnings || 0).toFixed(2);
+        
+        // Load Custom dynamic referred list
+        database.ref('referrals/' + currentUser.uid + '/referredUsers').on('value', snap => {
+          const list = snap.val() || {};
+          let html = "";
+          let count = 0;
+          for (let key in list) {
+            count++;
+            html += `<div class="flex justify-between items-center bg-white/[0.01] p-1.5 rounded"><span class="text-slate-300">${list[key].name}</span><span class="text-[10px] text-slate-500">${list[key].joinedAt.split('T')[0]}</span></div>`;
+          }
+          document.getElementById('referred-count').innerText = `${count} Candidate${count !== 1 ? 's' : ''}`;
+          document.getElementById('referrals-leaderboard').innerHTML = html || "<span class='text-slate-500 block text-center py-2'>Invite candidates to earn credits.</span>";
+        });
+      }
+    }
+
+    // 6. DB LOADER - FETCH COURSES & SYLLABUS
+    function fetchCoursesFromDatabase() {
+      database.ref('courses').on('value', snapshot => {
+        availableCourses = snapshot.val() || {};
+        renderHomeCourses();
+        renderStoreCourses();
+      });
+    }
+
+    // Carousel dynamic logic
+    function startAutoCarousel() {
+      setInterval(() => {
+        activeCarouselSlide = (activeCarouselSlide + 1) % 2;
+        slideHero(activeCarouselSlide);
+      }, 5000);
+    }
+
+    function slideHero(index) {
+      activeCarouselSlide = index;
+      const strip = document.getElementById('carousel-strip');
+      if (strip) strip.style.transform = `translateX(-${index * 100}%)`;
+      // Update dots
+      const dots = document.querySelectorAll('.slider-dot');
+      dots.forEach((dot, idx) => {
+        if (idx === index) {
+          dot.classList.add('bg-opacity-90');
+          dot.classList.remove('bg-opacity-40');
+        } else {
+          dot.classList.add('bg-opacity-40');
+          dot.classList.remove('bg-opacity-90');
+        }
+      });
+    }
+
+    function filterGroup(category) {
+      currentFilteredGroup = category;
+      renderHomeCourses();
+      
+      const btns = document.querySelectorAll('.exam-filter-btn');
+      btns.forEach(btn => {
+        if (btn.innerText.toUpperCase().includes(category) || (category === 'ALL' && btn.innerText === 'All Exams')) {
+          btn.classList.add('bg-blue-600', 'text-white');
+          btn.classList.remove('bg-white/[0.04]', 'text-slate-300');
+        } else {
+          btn.classList.add('bg-white/[0.04]', 'text-slate-300');
+          btn.classList.remove('bg-blue-600', 'text-white');
+        }
+      });
+    }
+
+    // Course visual grid rendering
+    function renderHomeCourses() {
+      const parent = document.getElementById('popular-courses-grid');
+      if (!parent) return;
+      parent.innerHTML = "";
+      
+      let count = 0;
+      for (let courseId in availableCourses) {
+        const c = availableCourses[courseId];
+        // Filter match
+        if (currentFilteredGroup !== 'ALL' && !c.name.toUpperCase().includes(currentFilteredGroup)) continue;
+        if (count >= 3 && currentFilteredGroup === 'ALL') break; // Top 3 on home
+        
+        count++;
+        const card = createCourseCardHTML(courseId, c);
+        parent.appendChild(card);
+      }
+      if (count === 0) {
+        parent.innerHTML = "<p class='text-xs text-slate-500 py-4'>No special courses target for " + currentFilteredGroup + " currently.</p>";
+      }
+    }
+
+    function renderStoreCourses() {
+      const parent = document.getElementById('store-courses-grid');
+      if (!parent) return;
+      parent.innerHTML = "";
+      
+      for (let courseId in availableCourses) {
+        const c = availableCourses[courseId];
+        const card = createCourseCardHTML(courseId, c);
+        parent.appendChild(card);
+      }
+    }
+
+    function createCourseCardHTML(courseId, c) {
+      const div = document.createElement('div');
+      div.className = "glass-card rounded-2xl overflow-hidden shadow-md flex flex-col hover:border-blue-500/30 transition duration-300";
+      
+      const isPurchased = purchasedCourses[courseId] !== undefined;
+      const thumbnail = c.thumbnail || "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&q=80&w=400";
+
+      div.innerHTML = `
+        <div class="relative h-28 w-full">
+          <img src="${thumbnail}" class="absolute inset-0 w-full h-full object-cover" alt="Syllabus Target">
+          <div class="absolute inset-0 bg-gradient-to-t from-brand-dark to-transparent"></div>
+          <span class="absolute bottom-2 left-3 text-[10px] bg-blue-600 text-white font-extrabold px-2 py-0.5 rounded-full font-mono uppercase tracking-widest"><i class="fa-solid fa-graduation-cap"></i> ${c.teacher || 'Roli Pandey'}</span>
+        </div>
+        <div class="p-4 flex-grow flex flex-col justify-between space-y-2">
+          <div>
+            <h4 class="font-poppins font-bold text-sm text-white line-clamp-1">${c.name}</h4>
+            <p class="text-[11px] text-slate-300 line-clamp-2 mt-0.5">${c.description || 'Comprehensive government preparation exams framework.'}</p>
+          </div>
+          <div class="flex items-center justify-between pt-2 border-t border-white/5">
+            <span class="text-xs font-bold text-white font-mono uppercase">₹199 <span class="line-through text-[9px] text-slate-500">₹2499</span></span>
+            ${isPurchased ? 
+              `<button onclick="launchPurchasedClassroom('${courseId}')" class="px-3.5 py-1.5 bg-green-600 hover:bg-green-700 active:scale-95 transition rounded-xl text-[10px] font-bold"><i class="fa-solid fa-play"></i> Enter Class</button>` :
+              `<button onclick="viewCourseDetails('${courseId}')" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 active:scale-95 transition rounded-xl text-[10px] font-bold">Unblock Course</button>`
+            }
+          </div>
+        </div>
+      `;
+      return div;
+    }
+
+    function viewCourseDetails(courseId) {
+      const c = availableCourses[courseId];
+      if (!c) return;
+
+      document.getElementById('hub-course-thumbnail').src = c.thumbnail || "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&q=80&w=600";
+      document.getElementById('hub-course-title').innerText = c.name;
+      document.getElementById('hub-course-description').innerText = c.description || "";
+      document.getElementById('hub-course-teacher').innerText = `By ${c.teacher || 'Roli Pandey'}`;
+      document.getElementById('hub-course-validity').innerHTML = `<i class="fa-solid fa-calendar"></i> ${c.validity || '365'} Days`;
+      
+      const isPurchased = purchasedCourses[courseId] !== undefined;
+      const buyBtn = document.getElementById('hub-buy-button');
+      
+      if (isPurchased) {
+        buyBtn.innerText = "Enter Prep Classroom";
+        buyBtn.className = "px-5 py-2.5 bg-green-600 hover:bg-green-700 active:scale-95 transition rounded-xl text-xs font-poppins font-bold";
+        buyBtn.onclick = () => launchPurchasedClassroom(courseId);
+      } else {
+        buyBtn.innerText = "Buy Now (₹199)";
+        buyBtn.className = "px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 transition rounded-xl text-xs font-poppins font-bold";
+        buyBtn.onclick = () => initiatePayUCheckout(courseId);
+      }
+
+      // Load syllabus accordion
+      loadSyllabusSkins(courseId);
+      setActiveTab('course-hub');
+    }
+
+    // 7. PAYU SECURE EXAMS CHECKOUT & INSTANT BYPASS
+    function initiatePayUCheckout(courseId) {
+      if (!currentUser) {
+        alert("Please authorize your Ed Achievers student account to complete checkout.");
+        setActiveTab('auth');
+        return;
+      }
+
+      const c = availableCourses[courseId];
+      const studentName = localUserData ? localUserData.name : "Aspirant Member";
+      const txnid = "TXN-" + Date.now();
+      const demoOption = confirm(`Proceeding to pay ₹199 for: "${c.name}"?\n\nSelect:\n[OK] to unlock securely using PayU Integration\n[CANCEL] to use Instant Sandbox Simulator for instant unblocking.`);
+
+      if (demoOption) {
+        // Build Secure Request to server for PayU Hash signing
+        const details = {
+          txnid: txnid,
+          amount: "199",
+          productinfo: courseId,
+          firstname: studentName,
+          email: currentUser.email,
+          udf1: currentUser.uid // Store student uid in udf1
+        };
+
+        fetch("/api/payments/payu-hash", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(details)
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.hash) {
+            // Update payloads
+            document.getElementById('form-txnid').value = txnid;
+            document.getElementById('form-amount').value = "199";
+            document.getElementById('form-productinfo').value = courseId;
+            document.getElementById('form-firstname').value = studentName;
+            document.getElementById('form-email').value = currentUser.email;
+            document.getElementById('form-phone').value = "9415022707";
+            document.getElementById('form-surl').value = window.location.origin + "/api/payments/success";
+            document.getElementById('form-furl').value = window.location.origin + "/api/payments/failure";
+            document.getElementById('form-hash').value = data.hash;
+            document.getElementById('form-udf1').value = currentUser.uid;
+
+            // Trigger submit safely
+            document.getElementById('payu-submit-form').submit();
+          } else {
+            alert("PayU signatures could not be validated. Try instant simulator checkout.");
+          }
+        })
+        .catch(err => {
+          console.error("Hash signing error:", err);
+          alert("Connect error. Falling back to platform simulator check tool.");
+        });
+      } else {
+        // Trigger client-side simulator
+        const expiry = new Date();
+        expiry.setDate(expiry.getDate() + 365);
+
+        database.ref(`purchases/${currentUser.uid}/${courseId}`).set({
+          purchaseId: "TXN-SIM-" + Date.now(),
+          paymentId: "PAY-SIM-" + Date.now(),
+          courseId: courseId,
+          amount: 199,
+          status: 'success',
+          purchaseDate: new Date().toISOString(),
+          expiryDate: expiry.toISOString()
+        }).then(() => {
+          alert("🎉 Success! Sandbox Simulator unblocked '" + c.name + "' successfully!");
+          viewCourseDetails(courseId);
+        });
+      }
+    }
+
+    // 8. ACCORDION GENERATORS IN PREVIEW
+    function loadSyllabusSkins(courseId) {
+      // Fetch Syllabus details (subjects -> chapters -> lectures) from Realtime Database
+      const container = document.getElementById('hub-syllabus-accordion');
+      if (!container) return;
+      container.innerHTML = "";
+
+      database.ref(`subjects/${courseId}`).once('value', snapshot => {
+        const subjects = snapshot.val() || {};
+        let count = 0;
+        for (let subId in subjects) {
+          count++;
+          const sub = subjects[subId];
+          const div = document.createElement('div');
+          div.className = "bg-white/[0.02] border border-white/5 p-3 rounded-xl";
+          div.innerHTML = `<h4 class="font-semibold text-xs text-blue-400 font-poppins flex items-center justify-between"><span>Subject ${count}: ${sub.name}</span> <i class="fa-solid fa-angle-down"></i></h4>`;
+          container.appendChild(div);
+        }
+        if (count === 0) {
+          container.innerHTML = "<p class='text-xs text-slate-500'>Syllabus structure and dynamic items compiling soon...</p>";
+        }
+      });
+    }
+
+    // 9. RESTRUCTURING SUBSCRIBED WINDOW
+    function syncMyCoursesPanel() {
+      const parent = document.getElementById('subscribed-list-container');
+      if (!parent) return;
+      parent.innerHTML = "";
+
+      let count = 0;
+      for (let courseId in purchasedCourses) {
+        count++;
+        const c = availableCourses[courseId];
+        if (!c) continue;
+
+        const thumbnail = c.thumbnail || "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&q=80&w=400";
+        const folder = document.createElement('div');
+        folder.className = "glass-card rounded-2xl p-4 flex gap-4 items-center hover:border-blue-500/20 cursor-pointer transition";
+        folder.onclick = () => launchPurchasedClassroom(courseId);
+        
+        folder.innerHTML = `
+          <img src="${thumbnail}" class="w-16 h-16 object-cover rounded-xl shrink-0" alt="folder">
+          <div class="flex-grow">
+            <h4 class="font-poppins font-bold text-xs text-white">${c.name}</h4>
+            <p class="text-[10px] text-slate-400 mt-1 uppercase font-mono tracking-wider"><i class="fa-solid fa-user-tie text-blue-400"></i> ${c.teacher || 'Roli Pandey'} &nbsp;&bull;&nbsp; <i class="fa-solid fa-clock"></i> 365 Days Valid</p>
+          </div>
+          <i class="fa-solid fa-chevron-right text-slate-550 shrink-0"></i>
+        `;
+        parent.appendChild(folder);
+      }
+      if (count === 0) {
+        parent.innerHTML = `
+          <div class="text-center py-8 space-y-3">
+            <i class="fa-solid fa-folder-open text-3xl text-slate-600 block"></i>
+            <p class="text-xs text-slate-400">You haven't unblocked any preparatory exam target courses yet.</p>
+            <button onclick="setActiveTab('store')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-xs font-bold rounded-xl transition">Explore Courses Store</button>
+          </div>
+        `;
+      }
+    }
+
+    function showUnblockedCourseList() {
+      setActiveTab('mycourses');
+    }
+
+    // 10. CLASSROOM AREA
+    function launchPurchasedClassroom(courseId) {
+      activeCourseNodeId = courseId;
+      const c = availableCourses[courseId];
+      if (!c) return;
+
+      document.getElementById('class-course-title').innerText = c.name;
+      document.getElementById('class-course-meta').innerHTML = `<i class="fa-solid fa-graduation-cap text-blue-400"></i> Instructor: ${c.teacher || 'Roli Pandey'}`;
+      
+      // Calculate and load custom dynamic progress metrics
+      syncCourseProgressMetric();
+      
+      // Load standard content subjects
+      renderSubjectAccordionForClassroom();
+      
+      // Load custom PDFs
+      renderPdfsForClassroom();
+
+      // Load Tests
+      renderTestsForClassroom();
+
+      // Load Live classes
+      renderLiveClassesForClassroom();
+      
+      toggleRoomTab('lectures-panel');
+      setActiveTab('folder-classroom');
+    }
+
+    function syncCourseProgressMetric() {
+      if (!activeCourseNodeId || !currentUser) return;
+      
+      // Custom algorithm: count how many recorded videos finished to calculate percentage
+      database.ref(`users/${currentUser.uid}/completedLecs/${activeCourseNodeId}`).once('value', snap => {
+        const completedMap = snap.val() || {};
+        const completedCount = Object.keys(completedMap).length;
+
+        // Fetch how many total lectures we have in database
+        database.ref(`lectures/${activeCourseNodeId}`).once('value', lecSnap => {
+          let totalLectures = 0;
+          const subjects = lecSnap.val() || {};
+          for (let sub in subjects) {
+            for (let chap in subjects[sub]) {
+              for (let lec in subjects[sub][chap]) {
+                totalLectures++;
+              }
+            }
+          }
+
+          let pct = 0;
+          if (totalLectures > 0) {
+             pct = Math.round((completedCount / totalLectures) * 100);
+          } else {
+             pct = 0; // fallback default
+          }
+
+          if (pct > 100) pct = 100;
+
+          document.getElementById('class-progress-pct').innerText = `${pct}% Completed`;
+          document.getElementById('class-progress-bar').style.width = `${pct}%`;
+
+          // If reached 100%, register dynamic certificate
+          if (pct === 100 && completedCount > 0) {
+            registerCompletionCertificate(activeCourseNodeId);
+          }
+        });
+      });
+    }
+
+    function toggleRoomTab(panelId) {
+      const contents = document.querySelectorAll('.room-tab-content');
+      contents.forEach(el => el.classList.add('hidden'));
+      document.getElementById(panelId).classList.remove('hidden');
+
+      const tabs = document.querySelectorAll('.room-nav-btn');
+      tabs.forEach(tab => {
+        if (tab.getAttribute('onclick').includes(panelId)) {
+          tab.classList.add('bg-blue-600', 'text-white', 'shadow');
+          tab.classList.remove('bg-white/[0.04]', 'text-slate-300');
+        } else {
+          tab.classList.add('bg-white/[0.04]', 'text-slate-300');
+          tab.classList.remove('bg-blue-600', 'text-white', 'shadow');
+        }
+      });
+    }
+
+    // 11. RECORDED LECTURES ACCORDION
+    function renderSubjectAccordionForClassroom() {
+      const outer = document.getElementById('folder-subject-accordion');
+      if (!outer) return;
+      outer.innerHTML = "<p class='text-xs text-slate-500 py-3 text-center'>Syllabus index loading...</p>";
+
+      database.ref(`subjects/${activeCourseNodeId}`).once('value', subSnap => {
+        const subjects = subSnap.val() || {};
+        outer.innerHTML = "";
+
+        let subIndex = 0;
+        for (let subId in subjects) {
+          subIndex++;
+          const sub = subjects[subId];
+          const subCard = document.createElement('div');
+          subCard.className = "bg-white/[0.02] border border-white/5 rounded-xl overflow-hidden";
+          subCard.id = `sub-card-${subId}`;
+          
+          subCard.innerHTML = `
+            <div onclick="toggleAccordionContent('${subId}')" class="p-4 cursor-pointer hover:bg-white/[0.02] flex items-center justify-between border-b border-white/5">
+              <h4 class="font-poppins font-bold text-xs text-blue-400 capitalize">Subject ${subIndex}: ${sub.name}</h4>
+              <i id="acc-icon-${subId}" class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+            </div>
+            <div id="acc-body-${subId}" class="hidden p-3 bg-brand-dark/20 space-y-3">
+              <!-- Chapters list inside subject -->
+            </div>
+          `;
+          outer.appendChild(subCard);
+
+          // Fetch Chapters
+          renderChaptersForSubject(subId);
+        }
+        if (subIndex === 0) {
+          outer.innerHTML = "<p class='text-xs text-slate-500 py-4 text-center'>Syllabus hierarchy and recorded modules are currently empty.</p>";
+        }
+      });
+    }
+
+    function toggleAccordionContent(accId) {
+      const body = document.getElementById('acc-body-' + accId);
+      const icon = document.getElementById('acc-icon-' + accId);
+      if (body.classList.contains('hidden')) {
+        body.classList.remove('hidden');
+        icon.className = "fa-solid fa-chevron-up text-blue-400 text-xs";
+      } else {
+        body.classList.add('hidden');
+        icon.className = "fa-solid fa-chevron-down text-slate-400 text-xs";
+      }
+    }
+
+    function renderChaptersForSubject(subId) {
+      const body = document.getElementById(`acc-body-${subId}`);
+      if (!body) return;
+
+      database.ref(`chapters/${activeCourseNodeId}/${subId}`).once('value', chapSnap => {
+        const chapters = chapSnap.val() || {};
+        let chapHtml = "";
+
+        for (let chapId in chapters) {
+          const chap = chapters[chapId];
+          chapHtml += `
+            <div class="border-l border-blue-500/30 pl-3 py-1 space-y-2">
+              <span class="block text-[11px] font-bold text-slate-300 font-poppins"><i class="fa-solid fa-bookmark text-blue-500"></i> ${chap.name}</span>
+              <div id="lectures-list-${subId}-${chapId}" class="space-y-1 p-1 bg-white/[0.01] rounded">
+                <!-- Lectures dynamically listed -->
+              </div>
+            </div>
+          `;
+          body.innerHTML = chapHtml;
+
+          // Fetch Lectures
+          renderLecturesForChapter(subId, chapId);
+        }
+        if (chapHtml === "") {
+          body.innerHTML = "<span class='text-[10px] text-slate-500'>No chapter units declared.</span>";
+        }
+      });
+    }
+
+    function renderLecturesForChapter(subId, chapId) {
+      const parent = document.getElementById(`lectures-list-${subId}-${chapId}`);
+      if (!parent) return;
+
+      database.ref(`lectures/${activeCourseNodeId}/${subId}/${chapId}`).once('value', lecSnap => {
+        const lectures = lecSnap.val() || {};
+        parent.innerHTML = "";
+
+        for (let lecId in lectures) {
+          const lec = lectures[lecId];
+          const div = document.createElement('div');
+          div.className = "flex items-center justify-between text-[11px] py-1.5 px-2 hover:bg-white/[0.04] rounded transition";
+          
+          div.innerHTML = `
+            <div class="flex items-center gap-2 max-w-[250px]">
+              <i class="fa-solid fa-circle-play text-blue-500 shrink-0"></i>
+              <span class="text-slate-200 truncate font-medium cursor-pointer" onclick="openVideoPlayer('${lec.youtubeUrl}', '${lec.title}', '${lecId}')">${lec.title}</span>
+            </div>
+            <span class="text-[9px] text-slate-500 font-mono">${lec.duration || 'Classroom'}</span>
+          `;
+          parent.appendChild(div);
+        }
+        if (parent.innerHTML === "") {
+          parent.innerHTML = "<span class='text-[9px] text-slate-600 block pl-2'>Recorded videos arriving soon.</span>";
+        }
+      });
+    }
+
+    // 12. EMBEDDED VIDEO VIEW & ATTENDANCE PROGRESS TRACKING
+    function openVideoPlayer(youtubeUrl, title, lectureId) {
+      if (!youtubeUrl) return alert("Video feed temporary inaccessible parameter.");
+      
+      // Extract video ID formats
+      let vId = "";
+      if (youtubeUrl.includes('youtu.be/')) {
+        vId = youtubeUrl.split('youtu.be/')[1].split('?')[0];
+      } else if (youtubeUrl.includes('v=')) {
+        vId = youtubeUrl.split('v=')[1].split('&')[0];
+      } else if (youtubeUrl.includes('embed/')) {
+        vId = youtubeUrl.split('embed/')[1].split('?')[0];
+      }
+
+      const embedUrl = `https://www.youtube.com/embed/${vId}?autoplay=1&rel=0`;
+      document.getElementById('youtube-iframe').src = embedUrl;
+      document.getElementById('video-lecture-title').innerText = title;
+
+      // Automatically register attendance and mark video progress as COMPLETED in background
+      if (currentUser && activeCourseNodeId) {
+        database.ref(`users/${currentUser.uid}/completedLecs/${activeCourseNodeId}/${lectureId}`).set(true)
+          .then(() => {
+            syncCourseProgressMetric();
+          });
+      }
+
+      setActiveTab('videoplayer');
+    }
+
+    function closeVideoLecture() {
+      document.getElementById('youtube-iframe').src = "";
+      setActiveTab('folder-classroom');
+    }
+
+    // 13. LIVE CLASSES WITHIN CLASSROOM
+    function renderLiveClassesForClassroom() {
+      const container = document.getElementById('class-live-list');
+      if (!container) return;
+      container.innerHTML = "<p class='text-xs text-slate-500 text-center py-2'>Loading stream timeline items...</p>";
+
+      database.ref('liveClasses').once('value', snapshot => {
+        const list = snapshot.val() || {};
+        container.innerHTML = "";
+
+        let found = 0;
+        for (let key in list) {
+          const item = list[key];
+          found++;
+          const card = document.createElement('div');
+          card.className = "bg-white/[0.02] border border-white/5 p-4 rounded-xl flex justify-between items-center";
+          
+          card.innerHTML = `
+            <div>
+              <span class="text-[9px] text-[#2563eb] border border-[#2563eb]/20 bg-[#2563eb]/5 px-2 py-0.5 rounded-md font-bold uppercase tracking-wider mb-1 inline-block">LIVE LOG</span>
+              <h4 class="font-poppins font-bold text-xs text-white">${item.title}</h4>
+              <p class="text-[10px] text-slate-400 mt-1"><i class="fa-solid fa-clock text-slate-500"></i> ${item.dateTime || 'Today'}</p>
+            </div>
+            <button onclick="openVideoPlayer('${item.youtubeLiveUrl}', '${item.title}', 'LIVE_${key}')" class="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 active:scale-95 transition text-[10px] font-bold rounded-xl shrink-0">Join Live</button>
+          `;
+          container.appendChild(card);
+        }
+        if (found === 0) {
+          container.innerHTML = "<span class='text-xs text-slate-500 block text-center py-4'>No live preparatory sessions stream scheduled today.</span>";
+        }
+      });
+      
+      // Render Today's top live on home view too
+      syncHomeLiveClassesFeed();
+    }
+
+    function syncHomeLiveClassesFeed() {
+      const container = document.getElementById('live-classes-strip');
+      if (!container) return;
+
+      database.ref('liveClasses').limitToFirst(1).once('value', snapshot => {
+        const data = snapshot.val() || {};
+        container.innerHTML = "";
+
+        let key = Object.keys(data)[0];
+        if (key) {
+          const item = data[key];
+          container.innerHTML = `
+            <div class="flex justify-between items-center">
+              <div>
+                <h4 class="font-bold text-xs text-white">${item.title}</h4>
+                <p class="text-[10px] text-slate-400 mt-1"><i class="fa-solid fa-user"></i> instructor: Roli Pandey &bull; Today</p>
+              </div>
+              <button onclick="openVideoPlayer('${item.youtubeLiveUrl}', '${item.title}', 'LIVE')" class="px-4 py-2 bg-red-600 hover:bg-red-700 active:scale-95 transition rounded-xl text-[10px] font-extrabold shadow-md shrink-0"><i class="fa-solid fa-play"></i> Tune In Live</button>
+            </div>
+          `;
+        } else {
+          container.innerHTML = `
+            <div class="text-center py-2 text-slate-400 text-xs">
+              <i class="fa-solid fa-calendar-check text-slate-600 mr-2 text-sm"></i> No active live prep stream currently. Use lectures list folders.
+            </div>
+          `;
+        }
+      });
+    }
+
+    // 14. PDF LIBRARY MANAGER
+    function renderPdfsForClassroom() {
+      const directory = document.getElementById('pdf-directory');
+      if (!directory) return;
+      directory.innerHTML = "";
+
+      database.ref('pdfs').once('value', snapshot => {
+        const pdfs = snapshot.val() || {};
+        let count = 0;
+        
+        for (let pdfId in pdfs) {
+          count++;
+          const file = pdfs[pdfId];
+          const doc = document.createElement('div');
+          doc.className = "flex justify-between items-center p-3 bg-white/[0.02] border border-white/5 rounded-xl hover:bg-white/[0.03] transition pdf-file-item";
+          doc.setAttribute('data-title', file.title.toLowerCase());
+          
+          doc.innerHTML = `
+            <div class="flex items-center gap-3 max-w-[255px]">
+              <div class="text-red-500 bg-red-500/10 w-9 h-9 flex items-center justify-center rounded-xl border border-red-500/20 shrink-0"><i class="fa-solid fa-file-pdf text-lg"></i></div>
+              <div>
+                <h4 class="font-bold text-xs text-slate-200 line-clamp-1">${file.title}</h4>
+                <span class="text-[9px] text-slate-500 block font-mono">${file.subject || 'Prep Class Notes'}</span>
+              </div>
+            </div>
+            <a href="${file.url}" target="_blank" class="w-9 h-9 rounded-xl bg-blue-600/15 border border-blue-600/30 text-blue-400 hover:bg-blue-600/25 transition active:scale-90 flex items-center justify-center text-xs shrink-0"><i class="fa-solid fa-download"></i></a>
+          `;
+          directory.appendChild(doc);
+        }
+        if (count === 0) {
+          directory.innerHTML = "<p class='text-xs text-slate-500 py-3 text-center'>Lecture notes and PDFs uploaded by Roli Pandey appear here soon.</p>";
+        }
+      });
+    }
+
+    function searchClassPdfs() {
+      const q = document.getElementById('pdf-search-query').value.toLowerCase();
+      const items = document.querySelectorAll('.pdf-file-item');
+      items.forEach(el => {
+        const title = el.getAttribute('data-title');
+        if (title && title.includes(q)) {
+          el.classList.remove('hidden');
+        } else {
+          el.classList.add('hidden');
+        }
+      });
+    }
+
+    // 15. PRACTICE TEST AND QUIZ ENGINE & TIMERS
+    function renderTestsForClassroom() {
+      const parent = document.getElementById('practice-tests-list');
+      if (!parent) return;
+      parent.innerHTML = "";
+
+      database.ref('tests').once('value', snapshot => {
+        const tests = snapshot.val() || {};
+        let count = 0;
+        for (let testId in tests) {
+          count++;
+          const t = tests[testId];
+          const div = document.createElement('div');
+          div.className = "bg-white/[0.02] border border-white/5 p-4 rounded-xl flex justify-between items-center";
+          
+          div.innerHTML = `
+            <div>
+              <span class="text-[9px] bg-[#1d4ed8]/10 text-[#2563eb] border border-[#2563eb]/20 font-bold px-2 py-0.5 rounded uppercase tracking-wider mb-1 inline-block">${t.subject || 'Chapter Test'}</span>
+              <h4 class="font-poppins font-bold text-xs text-white">${t.title}</h4>
+              <div class="flex gap-3 text-[9px] text-slate-400 mt-1 uppercase font-mono">
+                <span>Marks: ${t.totalMarks || '10'}</span>
+                <span>Time: ${t.durationMinutes || '2'} Mins</span>
+              </div>
+            </div>
+            <button onclick="launchExamQuizAttempt('${testId}')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-[10px] font-bold rounded-xl transition active:scale-95 shrink-0">Launch Test</button>
+          `;
+          parent.appendChild(div);
+        }
+        if (count === 0) {
+          parent.innerHTML = "<span class='text-xs text-slate-500 block text-center py-4'>Tests and quizzes metrics uploading.</span>";
+        }
+      });
+    }
+
+    function launchExamQuizAttempt(testId) {
+      if (!currentUser) return alert("Verify authentication to attempt quizzes.");
+      
+      // Stop dynamic countdown timer if active
+      clearInterval(testTimerInterval);
+
+      attemptTestId = testId;
+      testQuestions = [];
+      currentQuestionIdx = 0;
+      testAnswersSummary = [];
+      testScoreCount = 0;
+
+      database.ref(`questions/${testId}`).once('value', snapshot => {
+        const map = snapshot.val() || {};
+        for (let k in map) {
+          testQuestions.push({
+            id: k,
+            ...map[k]
+          });
+        }
+
+        if (testQuestions.length === 0) {
+          alert("Preparing questions index. Please try another test batch.");
+          return;
+        }
+
+        database.ref(`tests/${testId}`).once('value', snap => {
+          const tMeta = snap.val() || {};
+          document.getElementById('quiz-title').innerText = tMeta.title || "Subject Test";
+          document.getElementById('quiz-meta').innerText = `Category: ${tMeta.subject || 'Prep Exams'}`;
+          
+          const dur = parseInt(tMeta.durationMinutes || 2);
+          testSecsRemaining = dur * 60;
+          
+          renderQuestionUnit();
+          startQuizTimerCountdown();
+          setActiveTab('quiz-attempt');
+        });
+      });
+    }
+
+    function renderQuestionUnit() {
+      const q = testQuestions[currentQuestionIdx];
+      if (!q) return;
+
+      document.getElementById('quiz-q-num').innerText = `Question ${currentQuestionIdx + 1} of ${testQuestions.length}`;
+      document.getElementById('quiz-q-text').innerText = q.text;
+      
+      const parent = document.getElementById('quiz-options-container');
+      parent.innerHTML = "";
+      selectedOptionVal = null;
+
+      // Handle custom or standard options layout
+      const opts = q.options || [];
+      opts.forEach((optText, index) => {
+        const optionChar = String.fromCharCode(65 + index); // A, B, C, D
+        const optBtn = document.createElement('button');
+        optBtn.className = "w-full text-left p-3.5 rounded-xl bg-white/[0.02] border border-white/5 hover:border-blue-500/50 hover:bg-white/[0.04] transition flex items-center gap-3 select-none option-unit-btn";
+        optBtn.id = `opt-btn-${index}`;
+        optBtn.onclick = () => selectQuizOptionVal(index, optionChar);
+        
+        optBtn.innerHTML = `
+          <span class="w-6 h-6 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center font-bold text-blue-400 text-xs shrink-0">${optionChar}</span>
+          <span class="text-xs text-slate-200">${optText}</span>
+        `;
+        parent.appendChild(optBtn);
+      });
+
+      // Update button text for last question
+      const nextBtn = document.getElementById('quiz-next-btn');
+      if (currentQuestionIdx === testQuestions.length - 1) {
+        nextBtn.innerHTML = `Complete Test <i class="fa-solid fa-circle-check"></i>`;
+      } else {
+        nextBtn.innerHTML = `Save & Next <i class="fa-solid fa-angle-right"></i>`;
+      }
+    }
+
+    function selectQuizOptionVal(optIdx, char) {
+      selectedOptionVal = optIdx;
+      const btns = document.querySelectorAll('.option-unit-btn');
+      btns.forEach((btn, idx) => {
+        if (idx === optIdx) {
+          btn.classList.add('bg-blue-600/10', 'border-blue-500');
+          btn.classList.remove('bg-white/[0.02]', 'border-white/5');
+        } else {
+          btn.classList.add('bg-white/[0.02]', 'border-white/5');
+          btn.classList.remove('bg-blue-600/10', 'border-blue-500');
+        }
+      });
+    }
+
+    function startQuizTimerCountdown() {
+      const display = document.getElementById('quiz-timer');
+      testTimerInterval = setInterval(() => {
+        testSecsRemaining--;
+        if (testSecsRemaining <= 0) {
+          clearInterval(testTimerInterval);
+          alert("⏱️ Time expired! Submitting available mock answers...");
+          evaluateQuizResults();
+        } else {
+          const mins = Math.floor(testSecsRemaining / 60);
+          const secs = testSecsRemaining % 60;
+          display.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+      }, 1000);
+    }
+
+    function submitActiveAnswer() {
+      if (selectedOptionVal === null) {
+        return alert("Please pick an option to save parameters and proceed.");
+      }
+
+      const q = testQuestions[currentQuestionIdx];
+      const isCorrect = selectedOptionVal === parseInt(q.answer);
+      if (isCorrect) testScoreCount++;
+
+      testAnswersSummary.push({
+        questionTitle: q.text,
+        userSelection: selectedOptionVal,
+        correctSelection: parseInt(q.answer),
+        explanation: q.explanation || "No explanation registered.",
+        wasCorrect: isCorrect,
+        options: q.options || []
+      });
+
+      if (currentQuestionIdx < testQuestions.length - 1) {
+        currentQuestionIdx++;
+        renderQuestionUnit();
+      } else {
+        clearInterval(testTimerInterval);
+        evaluateQuizResults();
+      }
+    }
+
+    function abortQuizAttempt() {
+      if (confirm("Abandon active preparatory mock test evaluation? Results will not persist.")) {
+        clearInterval(testTimerInterval);
+        setActiveTab('mycourses');
+      }
+    }
+
+    // Evaluate dynamic test statistics
+    function evaluateQuizResults() {
+      // Post to database
+      const pct = Math.round((testScoreCount / testQuestions.length) * 100);
+      const acc = Math.round((testScoreCount / (testAnswersSummary.length || 1)) * 100);
+      const randRank = Math.floor(2 + Math.random() * 8);
+
+      document.getElementById('result-marks').innerText = `${testScoreCount}/${testQuestions.length}`;
+      document.getElementById('result-pct').innerText = `${pct}%`;
+      document.getElementById('result-rank').innerText = `#${randRank}`;
+      document.getElementById('result-accuracy').innerText = `${acc}%`;
+
+      if (pct >= 50) {
+        document.getElementById('result-status').innerText = "Congratulations! Safe parameters cleared. Dynamic metrics saved.";
+        document.getElementById('result-status').className = "text-xs text-green-400 font-semibold leading-relaxed";
+      } else {
+        document.getElementById('result-status').innerText = "Needs revision. Try attempting additional folder syllabus questions.";
+        document.getElementById('result-status').className = "text-xs text-orange-400 font-semibold leading-relaxed";
+      }
+
+      // Write results ledger for analytics
+      if (currentUser) {
+        const resId = "RES-" + Date.now();
+        database.ref(`results/${currentUser.uid}/${resId}`).set({
+          testId: attemptTestId,
+          score: testScoreCount,
+          total: testQuestions.length,
+          percentage: pct,
+          accuracy: acc,
+          rank: randRank,
+          completedAt: new Date().toISOString()
+        });
+      }
+
+      // Solutions display accordions
+      const feeds = document.getElementById('solution-feed-outer');
+      feeds.innerHTML = "";
+      testAnswersSummary.forEach((ans, idx) => {
+        const item = document.createElement('div');
+        item.className = `p-4 rounded-xl border ${ans.wasCorrect ? 'bg-green-500/5 border-green-500/10' : 'bg-red-500/5 border-red-500/10'} space-y-2`;
+        
+        const userChar = String.fromCharCode(65 + ans.userSelection);
+        const correctChar = String.fromCharCode(65 + ans.correctSelection);
+
+        item.innerHTML = `
+          <p class="text-xs font-bold text-slate-200">Q${idx + 1}: ${ans.questionTitle}</p>
+          <div class="text-[11px] space-y-1">
+            <span class="block">Your Pick: <b class="${ans.wasCorrect ? 'text-green-400' : 'text-red-400'}">${userChar}) ${ans.options[ans.userSelection] || ''}</b></span>
+            <span class="block">Correct Match: <b class="text-green-400">${correctChar}) ${ans.options[ans.correctSelection] || ''}</b></span>
+          </div>
+          <p class="text-[10px] text-slate-400 italic font-mono pt-1 border-t border-white/5"><i class="fa-solid fa-circle-info mr-1"></i> Explanation: ${ans.explanation}</p>
+        `;
+        feeds.appendChild(item);
+      });
+
+      setActiveTab('quiz-result');
+    }
+
+    // 16. DOUBT RESOLUTION SYSTEM WRITER
+    function submitDoubt() {
+      const q = document.getElementById('doubt-query-input').value.trim();
+      if (!q) return;
+
+      if (!currentUser) return alert("Verify parameters of student identity first.");
+
+      const doubtRef = database.ref('doubts').push();
+      doubtRef.set({
+        userId: currentUser.uid,
+        studentName: localUserData ? localUserData.name : "Active Aspirant",
+        courseId: activeCourseNodeId || "GENERAL",
+        queryTask: q,
+        status: "Pending",
+        timestamp: new Date().toISOString(),
+        replies: ""
+      }).then(() => {
+        document.getElementById('doubt-query-input').value = "";
+        alert("Doubt logged successfully on databases! Roli Pandey will reply shortly with stream updates.");
+        loadDoubtQueries();
+      });
+    }
+
+    function loadDoubtQueries() {
+      const parent = document.getElementById('doubts-list-stream');
+      if (!parent) return;
+      parent.innerHTML = "<p class='text-xs text-slate-500 py-2 text-center'>Loading doubts stream...</p>";
+
+      database.ref('doubts').on('value', snapshot => {
+        const doubts = snapshot.val() || {};
+        parent.innerHTML = "";
+
+        let found = 0;
+        for (let key in doubts) {
+          const d = doubts[key];
+          // Filter doubts for current student
+          if (currentUser && d.userId !== currentUser.uid) continue;
+
+          found++;
+          const queryCard = document.createElement('div');
+          queryCard.className = "glass-card rounded-2xl p-4 space-y-3";
+          
+          let repliesHtml = "";
+          if (d.replies) {
+            for (let rKey in d.replies) {
+              const r = d.replies[rKey];
+              repliesHtml += `
+                <div class="bg-white/5 p-2 rounded-xl border border-white/5 text-[11px] space-y-0.5">
+                  <span class="block text-blue-400 font-extrabold uppercase tracking-wide text-[9px]">${r.sender}</span>
+                  <p class="text-slate-300 font-medium">${r.text}</p>
+                </div>
+              `;
+            }
+          }
+
+          queryCard.innerHTML = `
+            <div class="flex justify-between items-start">
+              <span class="text-[9px] bg-white/5 border border-white/10 px-2 py-0.5 rounded text-slate-400 font-mono tracking-wider">${d.timestamp.split('T')[0]}</span>
+              <span class="text-[9px] font-extrabold px-2 py-0.5 rounded-full ${d.status === 'Answered' ? 'bg-green-500/15 text-green-400 border border-green-500/20' : 'bg-orange-500/15 text-orange-400 border border-orange-500/20'}">${d.status}</span>
+            </div>
+            <p class="text-xs text-slate-100 font-semibold leading-relaxed">"${d.queryTask}"</p>
+            ${repliesHtml ? `
+              <div class="space-y-2 pt-2 border-t border-white/5">
+                <span class="text-[9px] text-slate-500 uppercase font-black tracking-widest block"><i class="fa-solid fa-reply"></i> Replies Feed</span>
+                ${repliesHtml}
+              </div>
+            ` : ''}
+          `;
+          parent.appendChild(queryCard);
+        }
+        if (found === 0) {
+          parent.innerHTML = "<span class='text-xs text-slate-500 block text-center py-4'>Write and submit your first prep exam doubt query above.</span>";
+        }
+      });
+    }
+
+    // Sync doubts on tab activation
+    document.getElementById('nav-btn-doubts').addEventListener('click', () => {
+      loadDoubtQueries();
+    });
+
+    // 17. CANVAS CERTIFICATE ISSUER
+    function registerCompletionCertificate(courseId) {
+      if (!currentUser) return;
+      const c = availableCourses[courseId];
+      if (!c) return;
+
+      const certId = "CERT-" + currentUser.uid.substring(0, 5).toUpperCase() + "-" + courseId.substring(0, 4).toUpperCase();
+      
+      // Prevent duplicates in Firebase Realtime Database
+      database.ref(`certificates/${certId}`).once('value', snap => {
+        if (!snap.exists()) {
+          database.ref(`certificates/${certId}`).set({
+            certificateId: certId,
+            userId: currentUser.uid,
+            courseId: courseId,
+            userName: localUserData ? localUserData.name : "Active Aspirant",
+            courseName: c.name,
+            issueDate: new Date().toISOString().split('T')[0]
+          });
+        }
+      });
+    }
+
+    function renderCertificatesInProfile() {
+      const outer = document.getElementById('unlocked-certificates');
+      if (!outer) return;
+      outer.innerHTML = "";
+
+      if (!currentUser) return;
+
+      database.ref('certificates').orderByChild('userId').equalTo(currentUser.uid).on('value', snap => {
+        const certs = snap.val() || {};
+        outer.innerHTML = "";
+
+        let found = 0;
+        for (let key in certs) {
+          found++;
+          const cert = certs[key];
+          const div = document.createElement('div');
+          div.className = "flex justify-between items-center bg-white/[0.02] border border-white/5 p-3.5 rounded-2xl";
+          
+          div.innerHTML = `
+            <div>
+              <span class="text-[9px] bg-yellow-500/10 text-yellow-500 border border-yellow-500/30 px-2 py-0.5 rounded uppercase font-bold tracking-widest mb-1 inline-block">CERTIFICATE GENERATED</span>
+              <h4 class="font-poppins font-bold text-xs text-white">${cert.courseName}</h4>
+              <p class="text-[10px] text-slate-400 font-mono mt-1">Unique Verification Code: ${cert.certificateId}</p>
+            </div>
+            <button onclick="drawAndDownloadCertificateImage('${cert.userName}', '${cert.courseName}', '${cert.issueDate}', '${cert.certificateId}')" class="px-3 py-2 bg-yellow-600 hover:bg-yellow-700 active:scale-95 transition rounded-xl text-[10px] font-bold shrink-0 text-white"><i class="fa-solid fa-file-arrow-down mr-1"></i> Save Image</button>
+          `;
+          outer.appendChild(div);
+        }
+        if (found === 0) {
+          outer.innerHTML = "<p class='text-[10px] text-slate-500 p-2 text-center'>Launch 'My Prep', choose a course and finish standard chapters milestones folder at 100% to generate professional certificate files.</p>";
+        }
+      });
+    }
+
+    function drawAndDownloadCertificateImage(studentName, courseName, issueDate, certificateId) {
+      const canvas = document.getElementById('certificate-canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      // Draw rich visual diploma layout using canvas primitives
+      // 1. Background Fill
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0,0,1000,700);
+
+      // 2. Artistic Gold/Blue border margins
+      ctx.lineWidth = 15;
+      ctx.strokeStyle = "#1e3a8a"; // Deep Navy Indigo Blue
+      ctx.strokeRect(20, 20, 960, 660);
+
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "#eab308"; // Gold Leaf
+      ctx.strokeRect(35, 35, 930, 630);
+
+      // 4. Texts Elements paired
+      ctx.textAlign = "center";
+      
+      // Platform Branding Header
+      ctx.fillStyle = "#1e3a8a";
+      ctx.font = "bold 32px Poppins, sans-serif";
+      ctx.fillText("ED ACHIEVERS PLATFORM", 500, 110);
+      
+      ctx.fillStyle = "#64748b";
+      ctx.font = "italic 16.5px Inter, sans-serif";
+      ctx.fillText("Learn  •  Practice  •  Achieve  •  Verified Preparations System", 500, 140);
+
+      // Headline
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 44px Poppins, sans-serif";
+      ctx.fillText("CERTIFICATE OF COMPLEXITY COMPLETE", 500, 220);
+
+      ctx.fillStyle = "#475569";
+      ctx.font = "18px Inter, sans-serif";
+      ctx.fillText("This premium certificate is proudly presented to candidate", 500, 280);
+
+      // Recipient Name
+      ctx.fillStyle = "#1d4ed8"; // Brand blue
+      ctx.font = "bold 38px Poppins, sans-serif";
+      ctx.fillText(studentName.toUpperCase(), 500, 345);
+
+      // Course text
+      ctx.fillStyle = "#475569";
+      ctx.font = "18px Inter, sans-serif";
+      ctx.fillText("for successfully completing complete preparations curriculum requirements for", 500, 400);
+
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 26px Poppins, sans-serif";
+      ctx.fillText(courseName, 500, 445);
+
+      // Signatures
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "italic bold 18px cursive";
+      ctx.fillText("Roli Pandey", 300, 530);
+      ctx.font = "14px Inter, sans-serif";
+      ctx.fillStyle = "#64748b";
+      ctx.fillText("Expert Educator & Director", 300, 555);
+
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 15px monospace";
+      ctx.fillText("ID: " + certificateId, 700, 530);
+      ctx.font = "14px Inter, sans-serif";
+      ctx.fillStyle = "#64748b";
+      ctx.fillText("Certificate Security ID Check", 700, 555);
+
+      // Gold seal badge
+      ctx.fillStyle = "#eab308";
+      ctx.beginPath();
+      ctx.arc(500, 535, 38, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#854d0e";
+      ctx.stroke();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 10px Inter, sans-serif";
+      ctx.fillText("OFFICIAL", 500, 532);
+      ctx.fillText("SEAL", 500, 544);
+
+      // Completion Date footer marker
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "12px Inter, sans-serif";
+      ctx.fillText("Generated on: " + issueDate + "  •  Authority: Ed Achievers Inc.", 500, 620);
+
+      // Offer standard download triggering
+      const link = document.createElement('a');
+      link.download = `Ed_Achievers_Certificate_${certificateId}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // Sync profile elements
+    document.getElementById('nav-btn-profile').addEventListener('click', () => {
+      renderCertificatesInProfile();
+      loadUserInvoiceLedgers();
+    });
+
+    function loadUserInvoiceLedgers() {
+      const container = document.getElementById('profile-invoices-list');
+      if (!container || !currentUser) return;
+
+      database.ref(`purchases/${currentUser.uid}`).once('value', snapshot => {
+        const purchases = snapshot.val() || {};
+        container.innerHTML = "";
+
+        let found = 0;
+        for (let key in purchases) {
+          found++;
+          const p = purchases[key];
+          const course = availableCourses[p.courseId] || { name: "Exam Course Prep Batch" };
+          const div = document.createElement('div');
+          div.className = "p-4 flex justify-between items-center hover:bg-white/[0.01]";
+          
+          div.innerHTML = `
+            <div>
+              <h5 class="font-bold text-xs text-white">${course.name}</h5>
+              <span class="text-[9px] text-slate-500 font-mono block mt-0.5">ID: ${p.purchaseId} &bull; ${p.purchaseDate ? p.purchaseDate.split('T')[0] : 'Completed'}</span>
+            </div>
+            <span class="text-xs font-bold font-mono text-green-400">₹199.00</span>
+          `;
+          container.appendChild(div);
+        }
+        if (found === 0) {
+          container.innerHTML = "<p class='p-4 text-[11px] text-slate-500 text-center'>No active transactions available yet.</p>";
+        }
+      });
+    }
+
+    // 18. TESTIMONIAL LOADER
+    function loadUniversalTestimonials() {
+      database.ref('testimonials').limitToFirst(3).on('value', snap => {
+        const slot = document.getElementById('testimonial-slot');
+        if (!slot) return;
+        
+        const data = snap.val() || {};
+        const keys = Object.keys(data);
+        if (keys.length > 0) {
+          const item = data[keys[0]];
+          slot.innerHTML = `
+            <p>"${item.comment}"</p>
+            <span class="block mt-2.5 text-blue-400 font-extrabold uppercase font-poppins text-[9px]">— ${item.name} &bull; Teaching Candidate</span>
+          `;
+        } else {
+          slot.innerHTML = `
+            <p>"Ed Achievers completely simplified my CTET preparation! Roli Pandey's pedagogical chapters and notes unblocked a high score instantly in CTET paper 1 parameters!"</p>
+            <span class="block mt-2.5 text-blue-400 font-extrabold uppercase font-poppins text-[9px]">— Kiran S. &bull; Qualified CTET Aspirant</span>
+          `;
+        }
+      });
+    }
+
+    function loadUniversalToppers() {
+      database.ref('toppers').on('value', snap => {
+        const stream = document.getElementById('toppers-carousel');
+        if (!stream) return;
+
+        const data = snap.val() || {};
+        stream.innerHTML = "";
+
+        let found = 0;
+        for (let key in data) {
+          found++;
+          const t = data[key];
+          const photo = t.photoUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150";
+          const card = document.createElement('div');
+          card.className = "glass-card p-3 rounded-2xl w-28 text-center shrink-0 border border-blue-500/10";
+          
+          card.innerHTML = `
+            <img src="${photo}" class="w-11 h-11 rounded-full object-cover mx-auto border-2 border-blue-500 mb-2 shadow" alt="topper">
+            <h5 class="text-[10px] font-extrabold text-white truncate px-0.5">${t.name}</h5>
+            <span class="block text-[8px] text-blue-400 font-bold uppercase tracking-wider mt-0.5">${t.exam}</span>
+            <span class="block text-[8px] text-green-400 font-mono font-bold mt-0.5">${t.rank || 'Rank #1'} (${t.score || '98%'})</span>
+          `;
+          stream.appendChild(card);
+        }
+
+        if (found === 0) {
+          // Standard placeholder
+          stream.innerHTML = `
+            <div class="glass-card p-3 rounded-2xl w-28 text-center shrink-0">
+              <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150" class="w-11 h-11 rounded-full object-cover mx-auto border border-white/10 mb-2" alt="topper">
+              <h5 class="text-[10px] font-bold text-white truncate">Anjali J.</h5>
+              <span class="block text-[8.5px] text-blue-400">CTET (Paper 1)</span>
+              <span class="block text-[8.5px] font-bold text-green-400">Score: 138/150</span>
+            </div>
+            <div class="glass-card p-3 rounded-2xl w-28 text-center shrink-0">
+              <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=150" class="w-11 h-11 rounded-full object-cover mx-auto border border-white/10 mb-2" alt="topper">
+              <h5 class="text-[10px] font-bold text-white truncate">Karan Singh</h5>
+              <span class="block text-[8.5px] text-blue-400">KVS PRT</span>
+              <span class="block text-[8.5px] font-bold text-green-400">Score: 161/180</span>
+            </div>
+          `;
+        }
+      });
+    }
+
+    function copyReferralCode() {
+      const code = document.getElementById('my-referral-code').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        alert("Referral code copied to clipboard: " + code + "\n\nShare with friends to earn ₹50 wallet credits instantly upon standard unblock purchases!");
+      });
+    }
+
+    // 19. ONESIGNAL NOTIFICATIONS INIT FEED
+    window.OneSignal = window.OneSignal || [];
+    OneSignal.push(function() {
+      OneSignal.init({
+        appId: "847148437866", // Configured Sender ID or OneSignal App Id
+        safari_web_id: "web.onesignal.auto.edachievers",
+        notifyButton: {
+          enable: true,
+        },
+      });
+    });
+  </script>
+</body>
+</html>

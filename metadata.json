@@ -1,0 +1,6 @@
+{
+  "name": "Ed Achievers",
+  "description": "Learn • Practice • Achieve. A high-performance production-ready learning and quiz platform for CTET, KVS, DSSSB, and state TET exams.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
