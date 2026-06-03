@@ -130,10 +130,42 @@
     
     <!-- Cloudinary configurations override drawer -->
     <div class="flex items-center gap-3">
+      <button onclick="togglePayUSettings()" class="bg-white/5 hover:bg-white/10 text-xs px-3.5 py-2 rounded-xl transition border border-white/5 font-semibold text-slate-350 cursor-pointer"><i class="fa-solid fa-credit-card text-emerald-400 mr-2"></i> PayU Gateway Config</button>
       <button onclick="toggleCloudinarySettings()" class="bg-white/5 hover:bg-white/10 text-xs px-3.5 py-2 rounded-xl transition border border-white/5 font-semibold text-slate-300"><i class="fa-solid fa-cloud text-blue-400 mr-2"></i> Cloudinary API Config</button>
       <button onclick="exitAdminCRM()" class="bg-red-500/10 hover:bg-red-500/20 text-xs px-3.5 py-2 rounded-xl border border-red-500/15 text-red-400 font-bold transition"><i class="fa-solid fa-arrow-right-from-bracket"></i> Exit CRM</button>
     </div>
   </header>
+
+  <!-- PAYU GATEWAY CONFIGS OVERRIDES MODAL -->
+  <div id="payu-settings-panel" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
+    <div class="admin-card rounded-2xl p-6 max-w-md w-full space-y-4 border border-white/10 animate-fade-in text-xs">
+      <h3 class="font-poppins font-bold text-sm text-white flex items-center gap-2"><i class="fa-solid fa-credit-card text-emerald-400"></i> PayU Gateway Config</h3>
+      <p class="text-[11px] text-slate-400">Manage your production/sandbox credentials securely. These are saved in Firebase and accessed server-side to generate dynamic checkout hashes.</p>
+      
+      <div class="space-y-3 pt-1">
+        <div>
+          <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">PayU Merchant Key</label>
+          <input type="text" id="pref-payu-key" class="w-full text-xs text-white bg-white/[0.04] border border-white/10 p-2.5 rounded-lg focus:outline-none text-emerald-400 font-mono font-semibold" placeholder="e.g. ndYBUT">
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">PayU Merchant Salt</label>
+          <input type="password" id="pref-payu-salt" class="w-full text-xs text-white bg-white/[0.04] border border-white/10 p-2.5 rounded-lg focus:outline-none text-emerald-400 font-mono font-semibold" placeholder="e.g. huTpOWbzwO9Ty3PmOjTcKv6DhBRA9Sru">
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">PayU Client ID</label>
+          <input type="text" id="pref-payu-client-id" class="w-full text-xs text-white bg-white/[0.04] border border-white/10 p-2.5 rounded-lg focus:outline-none text-emerald-400 font-mono font-semibold" placeholder="e.g. b6f04c707e70...">
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">PayU Client Secret</label>
+          <input type="password" id="pref-payu-client-secret" class="w-full text-xs text-white bg-white/[0.04] border border-white/10 p-2.5 rounded-lg focus:outline-none text-emerald-400 font-mono font-semibold" placeholder="e.g. 78570065a952...">
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="togglePayUSettings()" class="bg-white/5 px-4 py-2 rounded-lg text-[11px] font-bold hover:bg-white/10 cursor-pointer text-slate-300">Close</button>
+        <button onclick="savePayUSettings()" class="bg-emerald-600 px-4 py-2 rounded-lg text-[11px] font-bold hover:bg-emerald-750 text-white cursor-pointer">Save Credentials</button>
+      </div>
+    </div>
+  </div>
 
   <!-- CLOUDINARY CONFIGS MODAL (Unsigned presets builder) -->
   <div id="cloudinary-settings-panel" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
@@ -521,8 +553,69 @@
 
       <!-- SECTION 9: FINANCE GROSS LEDGER & INVOICES -->
       <section id="crm-ledger" class="admin-tab-container hidden space-y-6">
+        <!-- PayU Live Analytics Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 animate-fade-in">
+          <!-- Total Revenue -->
+          <div class="admin-card p-4 rounded-xl border border-white/5 bg-gradient-to-br from-emerald-950/20 to-brand-dark space-y-1">
+            <span class="text-[9px] uppercase font-bold text-emerald-400 flex items-center gap-1">
+              <i class="fa-solid fa-money-bill-trend-up"></i> Total Revenue
+            </span>
+            <span id="payu-total-revenue" class="block font-poppins font-extrabold text-md text-white">₹0.00</span>
+          </div>
+
+          <!-- Today's Revenue -->
+          <div class="admin-card p-4 rounded-xl border border-white/5 bg-gradient-to-br from-blue-950/20 to-brand-dark space-y-1">
+            <span class="text-[9px] uppercase font-bold text-blue-400 flex items-center gap-1">
+              <i class="fa-solid fa-clock"></i> Today's Revenue
+            </span>
+            <span id="payu-today-revenue" class="block font-poppins font-extrabold text-md text-white">₹0.00</span>
+          </div>
+
+          <!-- Monthly Revenue -->
+          <div class="admin-card p-4 rounded-xl border border-white/5 bg-gradient-to-br from-purple-950/20 to-brand-dark space-y-1">
+            <span class="text-[9px] uppercase font-bold text-purple-400 flex items-center gap-1">
+              <i class="fa-solid fa-calendar-days"></i> Monthly Revenue
+            </span>
+            <span id="payu-month-revenue" class="block font-poppins font-extrabold text-md text-white">₹0.00</span>
+          </div>
+
+          <!-- Successful Payments -->
+          <div class="admin-card p-4 rounded-xl border border-white/5 bg-gradient-to-br from-emerald-950/5 to-brand-dark space-y-1">
+            <span class="text-[9px] uppercase font-bold text-slate-400 flex items-center gap-1">
+              <i class="fa-solid fa-circle-check text-emerald-500"></i> Successful
+            </span>
+            <span id="payu-count-success" class="block font-poppins font-extrabold text-md text-emerald-400">0</span>
+          </div>
+
+          <!-- Failed Payments -->
+          <div class="admin-card p-4 rounded-xl border border-white/5 bg-gradient-to-br from-red-950/5 to-brand-dark space-y-1">
+            <span class="text-[9px] uppercase font-bold text-slate-400 flex items-center gap-1">
+              <i class="fa-solid fa-circle-xmark text-red-500"></i> Failed
+            </span>
+            <span id="payu-count-failed" class="block font-poppins font-extrabold text-md text-red-400">0</span>
+          </div>
+
+          <!-- Pending Payments -->
+          <div class="admin-card p-4 rounded-xl border border-white/5 bg-gradient-to-br from-yellow-950/5 to-brand-dark space-y-1">
+            <span class="text-[9px] uppercase font-bold text-slate-400 flex items-center gap-1">
+              <i class="fa-solid fa-circle-notch text-yellow-500"></i> Pending
+            </span>
+            <span id="payu-count-pending" class="block font-poppins font-extrabold text-md text-yellow-500">0</span>
+          </div>
+        </div>
+
         <div class="admin-card rounded-2xl overflow-hidden text-xs">
-          <div class="p-4 border-b border-white/5 font-semibold text-slate-400 uppercase tracking-wider text-[11px]">Transactions ledger list</div>
+          <div class="p-4 border-b border-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <span class="font-semibold text-slate-400 uppercase tracking-wider text-[11px]">Transactions ledger list</span>
+            
+            <!-- Filters -->
+            <div class="flex flex-wrap gap-1 bg-black/40 p-1 rounded-xl border border-white/5">
+              <button onclick="setLedgerFilter('all')" id="btn-filt-all" class="px-3 py-1 bg-blue-600 text-[10px] font-bold text-white rounded-lg transition min-w-[50px] cursor-pointer">All</button>
+              <button onclick="setLedgerFilter('success')" id="btn-filt-success" class="px-3 py-1 text-slate-400 hover:text-white hover:bg-white/5 text-[10px] font-bold rounded-lg transition min-w-[55px] cursor-pointer">Success</button>
+              <button onclick="setLedgerFilter('failed')" id="btn-filt-failed" class="px-3 py-1 text-slate-400 hover:text-white hover:bg-white/5 text-[10px] font-bold rounded-lg transition min-w-[50px] cursor-pointer">Failed</button>
+              <button onclick="setLedgerFilter('pending')" id="btn-filt-pending" class="px-3 py-1 text-slate-400 hover:text-white hover:bg-white/5 text-[10px] font-bold rounded-lg transition min-w-[55px] cursor-pointer">Pending</button>
+            </div>
+          </div>
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
@@ -1012,7 +1105,7 @@
     let cloudinaryCloudName = "djtzg5ou7";
     let cloudinaryUploadPreset = "Ed_course";
 
-    // On-load local storage verification of preference settings
+    // On-load local storage verification of preference settings & PayU dynamic initialization
     window.addEventListener('load', () => {
       const storedName = localStorage.getItem('cl_name');
       const storedPreset = localStorage.getItem('cl_preset');
@@ -1026,7 +1119,48 @@
         document.getElementById('pref-cl-name').value = "djtzg5ou7";
         document.getElementById('pref-cl-preset').value = "Ed_course";
       }
+
+      // Fetch dynamic PayU Credentials from Firebase
+      if (typeof database !== 'undefined') {
+        database.ref('paymentConfig').on('value', snap => {
+          const config = snap.val() || {};
+          document.getElementById('pref-payu-key').value = config.merchantKey || "ndYBUT";
+          document.getElementById('pref-payu-salt').value = config.merchantSalt || "huTpOWbzwO9Ty3PmOjTcKv6DhBRA9Sru";
+          document.getElementById('pref-payu-client-id').value = config.clientId || "b6f04c707e70f54d1e89c315d3afa6b0a54e0d83aa506c6df3ed19b3dee9a51f";
+          document.getElementById('pref-payu-client-secret').value = config.clientSecret || "78570065a9525bde78c3ddeaf9dc333030d50e0307c6111111c03dc48f083";
+        });
+      }
     });
+
+    function togglePayUSettings() {
+      const panel = document.getElementById('payu-settings-panel');
+      if (panel) panel.classList.toggle('hidden');
+    }
+
+    function savePayUSettings() {
+      const key = document.getElementById('pref-payu-key').value.trim();
+      const salt = document.getElementById('pref-payu-salt').value.trim();
+      const clientId = document.getElementById('pref-payu-client-id').value.trim();
+      const clientSecret = document.getElementById('pref-payu-client-secret').value.trim();
+
+      if (!key || !salt) {
+        showToast("Merchant Key and Salt cannot be empty!", "error");
+        return;
+      }
+
+      database.ref('paymentConfig').set({
+        merchantKey: key,
+        merchantSalt: salt,
+        clientId: clientId,
+        clientSecret: clientSecret
+      }).then(() => {
+        showToast("PayU central merchant credentials saved and synced securely!", "success");
+        togglePayUSettings();
+      }).catch(err => {
+        console.error("Firebase config write error:", err);
+        showToast("Failed to write configurations to database.", "error");
+      });
+    }
 
     function toggleCloudinarySettings() {
       const panel = document.getElementById('cloudinary-settings-panel');
@@ -1297,23 +1431,145 @@
         renderStudentRegistriesTable(list);
       });
 
-      // 5. Sync purchases sales amount count & gross revenue
-      database.ref('purchases').on('value', snap => {
-        const payload = snap.val() || {};
-        let totalValSales = 0;
-        let revenueSum = 0;
+      // 5. Sync payments dynamic metrics and ledger
+      let currentLedgerFilter = 'all';
+      let globalPaymentsCache = {};
 
-        for (let uid in payload) {
-          for (let courseId in payload[uid]) {
-            totalValSales++;
-            revenueSum += parseFloat(payload[uid][courseId].amount || 199);
+      database.ref('payments').on('value', snap => {
+        const payments = snap.val() || {};
+        globalPaymentsCache = payments;
+        
+        let totalRevenue = 0;
+        let todayRevenue = 0;
+        let monthRevenue = 0;
+        let countSuccess = 0;
+        let countFailed = 0;
+        let countPending = 0;
+
+        const todayStr = "2026-06-03"; // Current local time date
+        const monthStr = "2026-06";
+
+        for (let pid in payments) {
+          const pay = payments[pid];
+          const status = (pay.status || "").toLowerCase();
+          const pDate = pay.createdAt || "";
+
+          if (status === 'success') {
+            countSuccess++;
+            const amt = parseFloat(pay.amount || 199);
+            totalRevenue += amt;
+
+            if (pDate.startsWith(todayStr)) {
+              todayRevenue += amt;
+            }
+            if (pDate.startsWith(monthStr)) {
+              monthRevenue += amt;
+            }
+          } else if (status === 'failed' || status === 'failure' || status === 'error') {
+            countFailed++;
+          } else if (status === 'pending' || status === 'initiated') {
+            countPending++;
           }
         }
-        document.getElementById('stat-sales-count').innerText = totalValSales;
-        document.getElementById('stat-revenue').innerText = "₹" + revenueSum.toFixed(2);
-        
-        renderFinanceGrossLedgerTable(payload);
+
+        // Update stats widgets in SECTION 9 Payments page
+        document.getElementById('payu-total-revenue').innerText = "₹" + totalRevenue.toFixed(2);
+        document.getElementById('payu-today-revenue').innerText = "₹" + todayRevenue.toFixed(2);
+        document.getElementById('payu-month-revenue').innerText = "₹" + monthRevenue.toFixed(2);
+        document.getElementById('payu-count-success').innerText = countSuccess;
+        document.getElementById('payu-count-failed').innerText = countFailed;
+        document.getElementById('payu-count-pending').innerText = countPending;
+
+        // Also update standard CRM overview widgets!
+        document.getElementById('stat-sales-count').innerText = countSuccess;
+        document.getElementById('stat-revenue').innerText = "₹" + totalRevenue.toFixed(2);
+
+        // Re-render table with active filter
+        renderFinancialLedgerWithFilter();
       });
+
+      window.setLedgerFilter = function(filterVal) {
+        currentLedgerFilter = filterVal;
+        
+        const btns = ['all', 'success', 'failed', 'pending'];
+        btns.forEach(b => {
+          const el = document.getElementById(`btn-filt-${b}`);
+          if (!el) return;
+          if (b === filterVal) {
+            el.className = "px-3 py-1 bg-blue-600 text-[10px] font-bold text-white rounded-lg transition cursor-pointer min-w-[50px]";
+          } else {
+            el.className = "px-3 py-1 text-slate-400 hover:text-white hover:bg-white/5 text-[10px] font-bold rounded-lg transition cursor-pointer min-w-[50px]";
+          }
+        });
+
+        renderFinancialLedgerWithFilter();
+      };
+
+      window.renderFinancialLedgerWithFilter = function() {
+        const parent = document.getElementById('ledger-table-body');
+        if (!parent) return;
+        parent.innerHTML = "";
+
+        let count = 0;
+        const list = globalPaymentsCache || {};
+
+        // Sort descending
+        const sortedKeys = Object.keys(list).sort((a, b) => {
+          const dateA = list[a].createdAt || "";
+          const dateB = list[b].createdAt || "";
+          return dateB.localeCompare(dateA);
+        });
+
+        for (let pid of sortedKeys) {
+          const p = list[pid];
+          const status = (p.status || "").toLowerCase();
+
+          // Filter
+          if (currentLedgerFilter === 'success' && status !== 'success') continue;
+          if (currentLedgerFilter === 'failed' && (status !== 'failed' && status !== 'failure' && status !== 'error')) continue;
+          if (currentLedgerFilter === 'pending' && status !== 'pending' && status !== 'initiated') continue;
+
+          count++;
+          const tr = document.createElement('tr');
+          tr.className = "hover:bg-white/[0.01]";
+
+          let statusBadge = "";
+          if (status === 'success') {
+            statusBadge = `<span class="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 uppercase rounded-full text-[9px] font-extrabold tracking-wider"><i class="fa-solid fa-circle-check"></i> Success</span>`;
+          } else if (status === 'failed' || status === 'failure' || status === 'error') {
+            statusBadge = `<span class="px-2 py-0.5 bg-red-500/10 border border-red-500/20 text-red-500 uppercase rounded-full text-[9px] font-extrabold tracking-wider"><i class="fa-solid fa-circle-xmark"></i> Failed</span>`;
+          } else {
+            statusBadge = `<span class="px-2 py-0.5 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 uppercase rounded-full text-[9px] font-extrabold tracking-wider"><i class="fa-solid fa-circle-notch animate-spin"></i> Pending</span>`;
+          }
+
+          const formattedDate = p.createdAt ? p.createdAt.split('T')[0] : 'Completed';
+          const method = p.paymentMethod || "PayU Checkout";
+
+          tr.innerHTML = `
+            <td class="p-4 font-mono font-bold text-white">
+              <div class="flex flex-col gap-0.5">
+                <span>${p.paymentId || pid}</span>
+                <span class="text-[9px] text-slate-500 font-normal">Txn: ${p.transactionId || 'None'}</span>
+              </div>
+            </td>
+            <td class="p-4 font-mono text-slate-500 text-[10px]">${(p.userId || '').substring(0, 10)}...</td>
+            <td class="p-4 text-blue-400 font-bold">${p.courseId}</td>
+            <td class="p-4 font-mono text-emerald-405 font-bold">₹${parseFloat(p.amount || 199).toFixed(2)}</td>
+            <td class="p-4">${statusBadge}</td>
+            <td class="p-4 text-slate-500 font-mono text-[10px]">
+              <div class="flex flex-col gap-0.5">
+                <span>${formattedDate}</span>
+                <span class="text-[9px] text-slate-500 font-normal shrink-0">${method}</span>
+              </div>
+            </td>
+          `;
+          parent.appendChild(tr);
+        }
+
+        if (count === 0) {
+          parent.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500 text-xs">No transaction records match the active filter criteria.</td></tr>`;
+        }
+      };
 
       // 6. Sync standard calendars, PDFs and banners lists
       renderLiveCalendarStreamTimelines();
@@ -1901,34 +2157,7 @@
       }
     }
 
-    // 13. FINANCE LEDGER REPORTS
-    function renderFinanceGrossLedgerTable(payload) {
-      const parent = document.getElementById('ledger-table-body');
-      parent.innerHTML = "";
-
-      let count = 0;
-      for (let uid in payload) {
-        for (let courseId in payload[uid]) {
-          count++;
-          const p = payload[uid][courseId];
-          const tr = document.createElement('tr');
-          tr.className = "hover:bg-white/[0.01]";
-          
-          tr.innerHTML = `
-            <td class="p-4 font-mono font-bold text-white">${p.paymentId || p.purchaseId}</td>
-            <td class="p-4 font-mono text-slate-500">${uid.substring(0, 8)}...</td>
-            <td class="p-4 font-mono text-blue-400">${courseId}</td>
-            <td class="p-4 font-mono text-green-400 font-bold">₹${parseFloat(p.amount || 199).toFixed(2)}</td>
-            <td class="p-4"><span class="px-2.5 py-1 bg-green-500/10 border border-green-500/20 text-green-450 uppercase rounded-full text-[9px] font-bold">Success</span></td>
-            <td class="p-4 text-slate-500">${p.purchaseDate ? p.purchaseDate.split('T')[0] : 'Completed'}</td>
-          `;
-          parent.appendChild(tr);
-        }
-      }
-      if (count === 0) {
-        parent.innerHTML = "<tr><td colspan='6' class='p-4 text-center text-slate-500'>Invoice transactions empty.</td></tr>";
-      }
-    }
+    // 13. FINANCE LEDGER REPORTS (Unified is handled dynamically under renderFinancialLedgerWithFilter)
 
     // 14. BANNER & PROMO DECORATORS
     document.getElementById('banner-build-form').addEventListener('submit', e => {

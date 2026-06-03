@@ -1467,6 +1467,54 @@
     let purchasedCourses = {};
     let currentFilteredGroup = 'ALL';
     let activeCarouselSlide = 0;
+
+    // Toast notification portal helper
+    window.showNotificationToast = function(message, type = 'success') {
+      const parent = document.getElementById('toast-notif-container');
+      if (!parent) {
+        const d = document.createElement('div');
+        d.id = "toast-notif-container";
+        d.className = "fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none";
+        document.body.appendChild(d);
+      }
+      
+      const container = document.getElementById('toast-notif-container');
+      const toast = document.createElement('div');
+      toast.className = "pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl border backdrop-blur-md animate-fade-in transition duration-300 transform translate-x-0";
+      
+      if (type === 'success') {
+        toast.className += " bg-emerald-950/92 border-emerald-550/20 text-emerald-300";
+        toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> <span class="text-xs font-semibold">${message}</span>`;
+      } else if (type === 'error' || type === 'failure') {
+        toast.className += " bg-red-950/92 border-red-500/20 text-red-300";
+        toast.innerHTML = `<i class="fa-solid fa-circle-xmark text-red-400"></i> <span class="text-xs font-semibold">${message}</span>`;
+      } else {
+        toast.className += " bg-slate-900/92 border-white/10 text-slate-350";
+        toast.innerHTML = `<i class="fa-solid fa-circle-info text-blue-400"></i> <span class="text-xs font-semibold">${message}</span>`;
+      }
+      
+      container.appendChild(toast);
+      
+      // Auto dismiss after 4 seconds
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'scale-90');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // Centered course valid checker (Auto-lock after 365 days)
+    window.isCourseAccessible = function(courseId) {
+      if (!purchasedCourses || !purchasedCourses[courseId]) return false;
+      const p = purchasedCourses[courseId];
+      if (p.expiryDate) {
+        const exp = new Date(p.expiryDate);
+        const now = new Date();
+        if (now > exp) {
+          return false; // Lock course automatically after expiry of 365 Days
+        }
+      }
+      return p.status === 'success';
+    }
     
     // Test Attempt State
     let attemptTestId = null;
@@ -1532,30 +1580,16 @@
       const uid = urlParams.get('uid');
       const amount = urlParams.get('amount') || "199";
 
-      if (paymentStatus === 'success' && courseId && uid) {
-        // Authenticate then write entry safely
-        alert("🎉 PayU Payment Successful! Activating your Ed Achievers Preparatory batch Course...");
-        
-        // Securely write entry inside Firebase Realtime Database
-        const purchaseRef = database.ref(`purchases/${uid}/${courseId}`);
-        const expiry = new Date();
-        expiry.setDate(expiry.getDate() + 365); // 365 validity
-
-        purchaseRef.set({
-          purchaseId: txnid || 'TXN-' + Date.now(),
-          paymentId: txnid || 'PAY-' + Date.now(),
-          courseId: courseId,
-          amount: parseFloat(amount),
-          status: 'success',
-          purchaseDate: new Date().toISOString(),
-          expiryDate: expiry.toISOString()
-        }).then(() => {
-          // Clear query parameters
-          window.history.replaceState({}, document.title, window.location.pathname);
-          location.reload();
-        });
+      if (paymentStatus === 'success' && courseId) {
+        // Since backend already verified and activated the purchase, simply clear parameters and show toast
+        setTimeout(() => {
+          showNotificationToast("🎉 Payment successful! Ed Achievers prep classroom unlocked.", "success");
+        }, 800);
+        window.history.replaceState({}, document.title, window.location.pathname);
       } else if (paymentStatus === 'failure') {
-        alert("❌ PayU Checkout Failed. Please check authorization parameters or retry.");
+        setTimeout(() => {
+          showNotificationToast("❌ PayU Checkout incomplete. Please retry or contact support.", "error");
+        }, 800);
         window.history.replaceState({}, document.title, window.location.pathname);
       }
 
@@ -1915,7 +1949,7 @@
       const div = document.createElement('div');
       div.className = "glass-card rounded-2xl overflow-hidden shadow-md flex flex-col hover:border-blue-500/30 transition duration-300";
       
-      const isPurchased = purchasedCourses[courseId] !== undefined;
+      const isPurchased = isCourseAccessible(courseId);
       const thumbnail = c.thumbnail || "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&q=80&w=400";
 
       div.innerHTML = `
@@ -1932,8 +1966,8 @@
           <div class="flex items-center justify-between pt-2 border-t border-white/5">
             <span class="text-xs font-bold text-white font-mono uppercase">₹199 <span class="line-through text-[9px] text-slate-500">₹2499</span></span>
             ${isPurchased ? 
-              `<button onclick="launchPurchasedClassroom('${courseId}')" class="px-3.5 py-1.5 bg-green-600 hover:bg-green-700 active:scale-95 transition rounded-xl text-[10px] font-bold"><i class="fa-solid fa-play"></i> Enter Class</button>` :
-              `<button onclick="viewCourseDetails('${courseId}')" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 active:scale-95 transition rounded-xl text-[10px] font-bold">Unblock Course</button>`
+              `<button onclick="launchPurchasedClassroom('${courseId}')" class="px-3.5 py-1.5 bg-green-600 hover:bg-green-700 active:scale-95 transition rounded-xl text-[10px] font-bold cursor-pointer"><i class="fa-solid fa-play"></i> Enter Class</button>` :
+              `<button onclick="viewCourseDetails('${courseId}')" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 active:scale-95 transition rounded-xl text-[10px] font-bold cursor-pointer">Unblock Course</button>`
             }
           </div>
         </div>
@@ -1951,12 +1985,12 @@
       document.getElementById('hub-course-teacher').innerText = `By ${c.teacher || 'Roli Pandey'}`;
       document.getElementById('hub-course-validity').innerHTML = `<i class="fa-solid fa-calendar"></i> ${c.validity || '365'} Days`;
       
-      const isPurchased = purchasedCourses[courseId] !== undefined;
+      const isPurchased = isCourseAccessible(courseId);
       const buyBtn = document.getElementById('hub-buy-button');
       
       if (isPurchased) {
         buyBtn.innerText = "Enter Prep Classroom";
-        buyBtn.className = "px-5 py-2.5 bg-green-600 hover:bg-green-700 active:scale-95 transition rounded-xl text-xs font-poppins font-bold";
+        buyBtn.className = "px-5 py-2.5 bg-green-600 hover:bg-green-700 active:scale-95 transition rounded-xl text-xs font-poppins font-bold cursor-pointer";
         buyBtn.onclick = () => launchPurchasedClassroom(courseId);
       } else {
         buyBtn.innerText = "Buy Now (₹199)";
@@ -1980,9 +2014,10 @@
       const c = availableCourses[courseId];
       const studentName = localUserData ? localUserData.name : "Aspirant Member";
       const txnid = "TXN-" + Date.now();
-      const demoOption = confirm(`Proceeding to pay ₹199 for: "${c.name}"?\n\nSelect:\n[OK] to unlock securely using PayU Integration\n[CANCEL] to use Instant Sandbox Simulator for instant unblocking.`);
+      
+      const useRealPayU = confirm(`Proceeding to buy ${c.name} for ₹199?\n\nSelect:\n[OK] to unlock securely using real PayU Gateway\n[CANCEL] to use Sandbox Simulator tool.`);
 
-      if (demoOption) {
+      if (useRealPayU) {
         // Build Secure Request to server for PayU Hash signing
         const details = {
           txnid: txnid,
@@ -2016,30 +2051,76 @@
             // Trigger submit safely
             document.getElementById('payu-submit-form').submit();
           } else {
-            alert("PayU signatures could not be validated. Try instant simulator checkout.");
+            showNotificationToast("PayU server hash invalid. Try dynamic credentials configure.", "error");
           }
         })
         .catch(err => {
           console.error("Hash signing error:", err);
-          alert("Connect error. Falling back to platform simulator check tool.");
+          showNotificationToast("Gateway communication error. Using simulation fallback.", "error");
         });
       } else {
-        // Trigger client-side simulator
-        const expiry = new Date();
-        expiry.setDate(expiry.getDate() + 365);
+        // Trigger simulation helper with dual response choices
+        const simulateSuccess = confirm("Would you like to simulate a SUCCESSFUL transaction?\n\nClick [OK] for Success integration\nClick [CANCEL] to simulate a FAILED transaction (tests retry mechanics).");
+        
+        const testTxn = "TXN-SIM-" + Date.now();
+        const testPay = "PAY-SIM-" + Date.now();
+        const dateStr = new Date().toISOString();
 
-        database.ref(`purchases/${currentUser.uid}/${courseId}`).set({
-          purchaseId: "TXN-SIM-" + Date.now(),
-          paymentId: "PAY-SIM-" + Date.now(),
-          courseId: courseId,
-          amount: 199,
-          status: 'success',
-          purchaseDate: new Date().toISOString(),
-          expiryDate: expiry.toISOString()
-        }).then(() => {
-          alert("🎉 Success! Sandbox Simulator unblocked '" + c.name + "' successfully!");
-          viewCourseDetails(courseId);
-        });
+        if (simulateSuccess) {
+          const expiry = new Date();
+          expiry.setDate(expiry.getDate() + 365); // 365 Days Validity
+
+          const payloadPayment = {
+            paymentId: testPay,
+            transactionId: testTxn,
+            userId: currentUser.uid,
+            courseId: courseId,
+            amount: 199,
+            paymentMethod: "Simulator Success",
+            status: "success",
+            createdAt: dateStr
+          };
+
+          const payloadPurchase = {
+            purchaseId: testTxn,
+            userId: currentUser.uid,
+            courseId: courseId,
+            purchaseDate: dateStr,
+            expiryDate: expiry.toISOString(),
+            status: "success"
+          };
+
+          Promise.all([
+            database.ref(`payments/${testPay}`).set(payloadPayment),
+            database.ref(`payments_by_user/${currentUser.uid}/${testPay}`).set(payloadPayment),
+            database.ref(`purchases/${currentUser.uid}/${courseId}`).set(payloadPurchase)
+          ]).then(() => {
+            showNotificationToast("🎉 Success! Classroom course unlocked for 365 days validity.", "success");
+            viewCourseDetails(courseId);
+          });
+        } else {
+          // Simulate failure transaction
+          const payloadPayment = {
+            paymentId: testPay,
+            transactionId: testTxn,
+            userId: currentUser.uid,
+            courseId: courseId,
+            amount: 199,
+            paymentMethod: "Simulator Failure Log",
+            status: "failed",
+            createdAt: dateStr
+          };
+
+          Promise.all([
+            database.ref(`payments/${testPay}`).set(payloadPayment),
+            database.ref(`payments_by_user/${currentUser.uid}/${testPay}`).set(payloadPayment)
+          ]).then(() => {
+            showNotificationToast("❌ Simulated Gateway payment failed. Retry buttons compiled.", "error");
+            // Switch tab to profile invoice so student sees retry option instantly!
+            setActiveTab('profile');
+            loadUserInvoiceLedgers();
+          });
+        }
       }
     }
 
@@ -2926,29 +3007,62 @@
       const container = document.getElementById('profile-invoices-list');
       if (!container || !currentUser) return;
 
-      database.ref(`purchases/${currentUser.uid}`).once('value', snapshot => {
-        const purchases = snapshot.val() || {};
+      // Query payments_by_user to see all historic payments (success, failed, pending)
+      database.ref(`payments_by_user/${currentUser.uid}`).once('value', snapshot => {
+        const payments = snapshot.val() || {};
         container.innerHTML = "";
 
         let found = 0;
-        for (let key in purchases) {
+        const keys = Object.keys(payments).reverse();
+
+        for (let key of keys) {
           found++;
-          const p = purchases[key];
+          const p = payments[key];
           const course = availableCourses[p.courseId] || { name: "Exam Course Prep Batch" };
           const div = document.createElement('div');
-          div.className = "p-4 flex justify-between items-center hover:bg-white/[0.01]";
+          div.className = "p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center hover:bg-white/[0.01] gap-2 border-b border-white/5 last:border-0";
           
+          let statusBadge = "";
+          const status = (p.status || "").toLowerCase();
+          let retryBtn = "";
+
+          if (status === 'success') {
+            statusBadge = `<span class="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 uppercase rounded-full text-[9px] font-extrabold tracking-wider"><i class="fa-solid fa-circle-check"></i> Success</span>`;
+          } else if (status === 'failed' || status === 'failure' || status === 'error') {
+            statusBadge = `<span class="px-2 py-0.5 bg-red-500/10 border border-red-500/20 text-red-400 uppercase rounded-full text-[9px] font-extrabold tracking-wider"><i class="fa-solid fa-circle-xmark"></i> Failed</span>`;
+            retryBtn = `<button onclick="initiatePayUCheckout('${p.courseId}')" class="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 active:scale-95 transition rounded-lg text-[9px] font-bold cursor-pointer ml-2 text-white"><i class="fa-solid fa-arrow-rotate-right mr-1"></i> Retry</button>`;
+          } else {
+            statusBadge = `<span class="px-2 py-0.5 bg-yellow-500/10 border border-yellow-500/20 text-yellow-550 uppercase rounded-full text-[9px] font-extrabold tracking-wider"><i class="fa-solid fa-circle-notch animate-spin"></i> Pending</span>`;
+          }
+
+          const formattedDate = p.createdAt ? p.createdAt.split('T')[0] : 'In-process';
+          const payId = p.paymentId || key;
+          const txId = p.transactionId || 'None';
+
           div.innerHTML = `
-            <div>
+            <div class="space-y-1">
               <h5 class="font-bold text-xs text-white">${course.name}</h5>
-              <span class="text-[9px] text-slate-500 font-mono block mt-0.5">ID: ${p.purchaseId} &bull; ${p.purchaseDate ? p.purchaseDate.split('T')[0] : 'Completed'}</span>
+              <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[9px] text-slate-500 font-mono">
+                <span>PayID: ${payId}</span>
+                <span class="text-slate-800">|</span>
+                <span>TxnID: ${txId}</span>
+                <span class="text-slate-800">|</span>
+                <span>Date: ${formattedDate}</span>
+              </div>
             </div>
-            <span class="text-xs font-bold font-mono text-green-400">₹199.00</span>
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+              <span class="text-xs font-bold font-mono text-white">₹${parseFloat(p.amount || 199).toFixed(2)}</span>
+              <div class="flex items-center">
+                ${statusBadge}
+                ${retryBtn}
+              </div>
+            </div>
           `;
           container.appendChild(div);
         }
+
         if (found === 0) {
-          container.innerHTML = "<p class='p-4 text-[11px] text-slate-500 text-center'>No active transactions available yet.</p>";
+          container.innerHTML = "<p class='p-4 text-[11px] text-slate-500 text-center'>No active transactions or invoice logs compiled for this student account.</p>";
         }
       });
     }
