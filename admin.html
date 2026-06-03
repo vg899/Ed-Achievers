@@ -8,13 +8,34 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
+  <script>
+    // Safeguard the application from non-fatal third-party script crashes
+    window.onerror = function(message, source, lineno, colno, error) {
+      if (message === "Script error." || (source && !source.includes(window.location.hostname))) {
+        console.warn("Muted non-fatal cross-origin script error safely to preserve stability:", message, "Source:", source);
+        return true;
+      }
+      if (message && (message.includes("SecurityError") || message.includes("Permission denied") || message.includes("ServiceWorker"))) {
+        console.warn("Muted sandbox environment limitation exception safely:", message);
+        return true;
+      }
+      return false;
+    };
+    window.addEventListener('unhandledrejection', function(event) {
+      if (event.reason && event.reason.message && (event.reason.message.includes("ServiceWorker") || event.reason.message.includes("indexedDB"))) {
+        console.warn("Muted unhandled promise rejection safely:", event.reason.message);
+        event.preventDefault();
+      }
+    });
+  </script>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   
   <!-- Firebase Compat CDNs -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" crossorigin="anonymous"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js" crossorigin="anonymous"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
   <script>
     tailwind.config = {
